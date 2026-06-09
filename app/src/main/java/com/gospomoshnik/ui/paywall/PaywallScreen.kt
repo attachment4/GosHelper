@@ -1,37 +1,335 @@
 package com.gospomoshnik.ui.paywall
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 
-/**
- * Экран подписки Pro.
- * TODO Фаза 5: планы 199₽/мес и 990₽/год, интеграция ЮKassa SDK, СБП.
- */
+private val DarkBrand  = Color(0xFF1E1B4B)
+private val BrandColor = Color(0xFF4338CA)
+private val BrandLight = Color(0xFFEEF2FF)
+private val GreenColor = Color(0xFF059669)
+private val GreenLight = Color(0xFFD1FAE5)
+private val GoldColor  = Color(0xFFD97706)
+private val GoldLight  = Color(0xFFFEF3C7)
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PaywallScreen(onClose: () -> Unit) {
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("ГосПомощник Pro") },
-                navigationIcon = {
-                    IconButton(onClick = onClose) {
-                        Icon(Icons.Default.Close, contentDescription = "Закрыть")
-                    }
-                }
-            )
-        }
-    ) { padding ->
-        Box(
-            modifier         = Modifier.fillMaxSize().padding(padding),
-            contentAlignment = Alignment.Center
+    var selectedPlan by remember { mutableStateOf("year") }
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color(0xFFF9FAFB))
+            .verticalScroll(rememberScrollState())
+    ) {
+        // Hero-секция
+        HeroSection(onClose = onClose)
+
+        // Контент
+        Column(
+            modifier = Modifier.padding(20.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            Text("Подписка — реализация в Фазе 5")
+            FeaturesList()
+
+            PlansRow(
+                selected = selectedPlan,
+                onSelect = { selectedPlan = it }
+            )
+
+            Button(
+                onClick  = { /* TODO: ЮKassa SDK */ },
+                modifier = Modifier.fillMaxWidth().height(52.dp),
+                shape    = RoundedCornerShape(16.dp),
+                colors   = ButtonDefaults.buttonColors(containerColor = BrandColor),
+                elevation = ButtonDefaults.buttonElevation(defaultElevation = 4.dp)
+            ) {
+                Text(
+                    text       = if (selectedPlan == "year") "Оформить на год — 990 ₽"
+                                 else "Оформить на месяц — 199 ₽",
+                    fontSize   = 15.sp,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+
+            PaymentBadges()
+
+            FreeNote()
+
+            Disclaimer()
         }
     }
+}
+
+@Composable
+private fun HeroSection(onClose: () -> Unit) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(
+                Brush.linearGradient(
+                    listOf(Color(0xFF1E1B4B), Color(0xFF312E81), Color(0xFF3730A3))
+                )
+            )
+            .padding(24.dp)
+    ) {
+        // Кнопка закрыть
+        IconButton(
+            onClick  = onClose,
+            modifier = Modifier
+                .align(Alignment.TopEnd)
+                .size(32.dp)
+                .clip(CircleShape)
+                .background(Color.White.copy(alpha = 0.1f))
+        ) {
+            Icon(Icons.Default.Close, contentDescription = "Закрыть", tint = Color.White.copy(alpha = 0.7f), modifier = Modifier.size(16.dp))
+        }
+
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier            = Modifier.fillMaxWidth().padding(top = 8.dp)
+        ) {
+            // Иконка короны
+            Box(
+                modifier = Modifier
+                    .size(64.dp)
+                    .clip(RoundedCornerShape(20.dp))
+                    .background(Color.White.copy(alpha = 0.1f))
+                    .border(1.dp, Color.White.copy(alpha = 0.2f), RoundedCornerShape(20.dp)),
+                contentAlignment = Alignment.Center
+            ) {
+                Text("👑", fontSize = 30.sp)
+            }
+
+            Spacer(Modifier.height(14.dp))
+
+            Text(
+                text       = "ГосПомощник Pro",
+                color      = Color.White,
+                fontSize   = 22.sp,
+                fontWeight = FontWeight.Bold
+            )
+            Text(
+                text      = "Полный доступ к ИИ-юристу\nбез ограничений",
+                color     = Color.White.copy(alpha = 0.65f),
+                fontSize  = 13.sp,
+                textAlign = TextAlign.Center,
+                lineHeight = 20.sp,
+                modifier  = Modifier.padding(top = 6.dp)
+            )
+
+            Spacer(Modifier.height(4.dp))
+        }
+    }
+}
+
+@Composable
+private fun FeaturesList() {
+    val features = listOf(
+        Pair("Безлимитные консультации ИИ",    "Без лимита на запросы каждый месяц"),
+        Pair("Генерация документов PDF",        "Жалобы, заявления, претензии"),
+        Pair("История всех чатов",              "Сохраняется на устройстве бессрочно"),
+        Pair("Голосовой ввод вопросов",         "Говорите — ИИ слушает"),
+        Pair("Приоритетная скорость ответа",    "Быстрее в 3× в часы пик")
+    )
+
+    Column {
+        features.forEachIndexed { i, (title, sub) ->
+            Row(
+                modifier          = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 10.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Box(
+                    modifier         = Modifier.size(22.dp).clip(CircleShape).background(GreenLight),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(Icons.Default.Check, contentDescription = null, tint = GreenColor, modifier = Modifier.size(13.dp))
+                }
+                Column {
+                    Text(title, fontSize = 13.sp, fontWeight = FontWeight.Medium, color = Color(0xFF111827))
+                    Text(sub, fontSize = 11.sp, color = Color(0xFF6B7280))
+                }
+            }
+            if (i < features.size - 1) {
+                HorizontalDivider(color = Color(0xFFE5E7EB))
+            }
+        }
+    }
+}
+
+@Composable
+private fun PlansRow(selected: String, onSelect: (String) -> Unit) {
+    Row(
+        modifier              = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(10.dp)
+    ) {
+        // Месяц
+        PlanCard(
+            period   = "Месяц",
+            price    = "199",
+            perMonth = "/месяц",
+            saving   = null,
+            badge    = null,
+            selected = selected == "month",
+            modifier = Modifier.weight(1f),
+            onClick  = { onSelect("month") }
+        )
+        // Год
+        PlanCard(
+            period   = "Год",
+            price    = "990",
+            perMonth = "83 ₽/мес",
+            saving   = "Экономия 1 398 ₽",
+            badge    = "Выгоднее на 58%",
+            selected = selected == "year",
+            modifier = Modifier.weight(1f),
+            onClick  = { onSelect("year") }
+        )
+    }
+}
+
+@Composable
+private fun PlanCard(
+    period: String,
+    price: String,
+    perMonth: String,
+    saving: String?,
+    badge: String?,
+    selected: Boolean,
+    modifier: Modifier,
+    onClick: () -> Unit
+) {
+    val borderColor = if (selected) BrandColor else Color(0xFFE5E7EB)
+    val borderWidth = if (selected) 2.dp else 1.5.dp
+
+    Box(modifier = modifier) {
+        Surface(
+            shape    = RoundedCornerShape(16.dp),
+            color    = Color.White,
+            modifier = Modifier
+                .fillMaxWidth()
+                .border(borderWidth, borderColor, RoundedCornerShape(16.dp))
+                .clickable(onClick = onClick)
+        ) {
+            Column(
+                modifier            = Modifier.padding(14.dp).padding(top = if (badge != null) 10.dp else 0.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(period, fontSize = 11.sp, color = Color(0xFF6B7280))
+                Spacer(Modifier.height(4.dp))
+                Text(
+                    text       = "$price ₽",
+                    fontSize   = 22.sp,
+                    fontWeight = FontWeight.Bold,
+                    color      = if (selected) BrandColor else Color(0xFF111827)
+                )
+                Text(perMonth, fontSize = 11.sp, color = Color(0xFF6B7280))
+                saving?.let {
+                    Spacer(Modifier.height(4.dp))
+                    Text(it, fontSize = 11.sp, fontWeight = FontWeight.SemiBold, color = GreenColor)
+                }
+            }
+        }
+
+        badge?.let {
+            Surface(
+                shape    = RoundedCornerShape(20.dp),
+                color    = BrandColor,
+                modifier = Modifier.align(Alignment.TopCenter).offset(y = (-10).dp)
+            ) {
+                Text(
+                    text     = it,
+                    color    = Color.White,
+                    fontSize = 10.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 3.dp)
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun PaymentBadges() {
+    Row(
+        modifier              = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.Center,
+        verticalAlignment     = Alignment.CenterVertically
+    ) {
+        listOf(
+            Triple("СБП",   Color(0xFF065F46), Color(0xFFD1FAE5)),
+            Triple("ЮKassa", Color(0xFF312E81), BrandLight),
+            Triple("Карта",  Color(0xFF374151), Color(0xFFF3F4F6))
+        ).forEach { (label, textColor, bgColor) ->
+            Surface(
+                shape    = RoundedCornerShape(8.dp),
+                color    = bgColor,
+                modifier = Modifier.padding(horizontal = 4.dp)
+            ) {
+                Text(
+                    text       = label,
+                    color      = textColor,
+                    fontSize   = 11.sp,
+                    fontWeight = FontWeight.Bold,
+                    modifier   = Modifier.padding(horizontal = 12.dp, vertical = 4.dp)
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun FreeNote() {
+    Surface(
+        shape    = RoundedCornerShape(10.dp),
+        color    = GoldLight,
+        modifier = Modifier
+            .fillMaxWidth()
+            .border(1.dp, Color(0xFFFDE68A), RoundedCornerShape(10.dp))
+    ) {
+        Text(
+            text      = "🎁 Бесплатно: 10 вопросов каждый месяц\nБез подписки — без скрытых списаний",
+            fontSize  = 12.sp,
+            color     = GoldColor,
+            fontWeight = FontWeight.Medium,
+            textAlign = TextAlign.Center,
+            lineHeight = 20.sp,
+            modifier  = Modifier.padding(12.dp)
+        )
+    }
+}
+
+@Composable
+private fun Disclaimer() {
+    Text(
+        text      = "Подписка продлевается автоматически.\nОтменить можно в любой момент в профиле.",
+        fontSize  = 11.sp,
+        color     = Color(0xFF9CA3AF),
+        textAlign = TextAlign.Center,
+        lineHeight = 17.sp,
+        modifier  = Modifier.fillMaxWidth()
+    )
 }
