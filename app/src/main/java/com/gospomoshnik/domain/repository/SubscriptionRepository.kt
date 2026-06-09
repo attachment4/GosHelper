@@ -12,6 +12,9 @@ interface SubscriptionRepository {
     /** Реактивный поток статуса подписки. */
     fun getStatus(): Flow<SubscriptionStatus>
 
+    /** Одноразовое получение текущего статуса. */
+    suspend fun getStatusOnce(): SubscriptionStatus
+
     /** Увеличить счётчик использованных запросов на 1. */
     suspend fun incrementUsage()
 

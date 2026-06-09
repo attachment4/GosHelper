@@ -15,6 +15,9 @@ class CheckSubscriptionUseCase @Inject constructor(
     /** Реактивный поток статуса — UI подписывается и автоматически обновляется. */
     fun observe(): Flow<SubscriptionStatus> = repository.getStatus()
 
+    /** Одноразовое получение текущего статуса (для ChatViewModel). */
+    suspend fun get(): SubscriptionStatus = repository.getStatusOnce()
+
     /** Вызвать перед каждым отправленным сообщением. */
     suspend fun consumeRequest() = repository.incrementUsage()
 }

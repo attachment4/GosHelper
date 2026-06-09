@@ -8,6 +8,7 @@ import com.gospomoshnik.domain.model.SubscriptionStatus
 import com.gospomoshnik.domain.repository.SubscriptionRepository
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -41,6 +42,8 @@ class SubscriptionRepositoryImpl @Inject constructor(
                 expiresAt      = expiresAt
             )
         }
+
+    override suspend fun getStatusOnce(): SubscriptionStatus = getStatus().first()
 
     override suspend fun incrementUsage() {
         context.dataStore.edit { prefs ->
