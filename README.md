@@ -100,3 +100,4 @@ Data (Retrofit + Room + ЮKassa SDK)
 | 4 | Монетизация: ЮKassa SDK + FastAPI бэкенд |
 | 5 | Голосовой ввод, онбординг, тёмная тема |
 | 6 | Релиз в RuStore + лендинг на GitHub Pages |
+# GosHelper
