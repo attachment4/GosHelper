@@ -4,13 +4,12 @@ import com.gospomoshnik.domain.model.ChatMessage
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import javax.inject.Inject
-import javax.inject.Named
 import javax.inject.Singleton
 
 @Singleton
 class GigaChatRepository @Inject constructor(
     private val api: GigaChatApi,
-    @Named("gigachat_token") private val authToken: String
+    private val tokenManager: GigaChatTokenManager
 ) {
     fun sendMessage(
         history: List<ChatMessage>,
@@ -23,10 +22,8 @@ class GigaChatRepository @Inject constructor(
             }
         }
 
-        val response = api.chat(
-            bearer  = "Bearer $authToken",
-            request = GigaChatRequest(messages = messages)
-        )
+        val bearer   = tokenManager.getBearer()
+        val response = api.chat(bearer = bearer, request = GigaChatRequest(messages = messages))
         emit(response.text)
     }
 

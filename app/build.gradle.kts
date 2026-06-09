@@ -19,9 +19,9 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
-        // GigaChat token — задать в local.properties: GIGACHAT_TOKEN=<ваш токен>
-        val gigaChatToken = project.findProperty("GIGACHAT_TOKEN")?.toString() ?: ""
-        buildConfigField("String", "GIGACHAT_TOKEN", "\"$gigaChatToken\"")
+        // GigaChat credentials — задать в local.properties: GIGACHAT_AUTH=<base64(clientId:secret)>
+        val gigaChatAuth = project.findProperty("GIGACHAT_AUTH")?.toString() ?: ""
+        buildConfigField("String", "GIGACHAT_AUTH", "\"$gigaChatAuth\"")
 
         // Room: экспорт схемы для миграций
         ksp {

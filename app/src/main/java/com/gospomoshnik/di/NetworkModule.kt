@@ -2,6 +2,7 @@ package com.gospomoshnik.di
 
 import com.gospomoshnik.BuildConfig
 import com.gospomoshnik.data.remote.GigaChatApi
+import com.gospomoshnik.data.remote.GigaChatOAuthApi
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -19,6 +20,7 @@ import javax.inject.Singleton
 object NetworkModule {
 
     private const val GIGACHAT_BASE_URL = "https://gigachat.devices.sberbank.ru/api/v1/"
+    private const val OAUTH_BASE_URL    = "https://ngw.devices.sberbank.ru:9443/"
 
     @Provides
     @Singleton
@@ -48,6 +50,16 @@ object NetworkModule {
             .create(GigaChatApi::class.java)
 
     @Provides
-    @Named("gigachat_token")
-    fun provideGigaChatToken(): String = BuildConfig.GIGACHAT_TOKEN
+    @Singleton
+    fun provideGigaChatOAuthApi(client: OkHttpClient): GigaChatOAuthApi =
+        Retrofit.Builder()
+            .baseUrl(OAUTH_BASE_URL)
+            .client(client)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+            .create(GigaChatOAuthApi::class.java)
+
+    @Provides
+    @Named("gigachat_auth")
+    fun provideGigaChatAuth(): String = BuildConfig.GIGACHAT_AUTH
 }
