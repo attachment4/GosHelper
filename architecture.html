@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ГосПомощник — Архитектура</title>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;600&family=Manrope:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Manrope', sans-serif;
+    background: #0F0F23;
+    min-height: 100vh;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    padding: 3rem 2rem;
+  }
+  h1 {
+    font-family: 'Unbounded', sans-serif;
+    font-size: 18px; font-weight: 600;
+    color: white; text-align: center;
+    margin-bottom: 6px;
+  }
+  .subtitle { font-size: 13px; color: rgba(255,255,255,.5); text-align: center; margin-bottom: 40px; }
+
+  .arch {
+    width: 100%; max-width: 860px;
+    display: flex; flex-direction: column; gap: 12px;
+  }
+
+  .layer {
+    border-radius: 16px; padding: 20px 24px;
+    border: 1px solid rgba(255,255,255,.08);
+    position: relative;
+  }
+  .layer-label {
+    font-size: 10px; font-weight: 700; letter-spacing: 1.5px;
+    text-transform: uppercase; margin-bottom: 14px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .layer-label::after {
+    content: ''; flex: 1; height: 1px;
+    background: currentColor; opacity: .2;
+  }
+  .layer-cards { display: flex; gap: 10px; flex-wrap: wrap; }
+  .lcard {
+    flex: 1; min-width: 140px;
+    border-radius: 10px; padding: 12px 14px;
+    border: 1px solid rgba(255,255,255,.08);
+  }
+  .lcard-title { font-size: 13px; font-weight: 600; margin-bottom: 4px; }
+  .lcard-sub { font-size: 11px; opacity: .65; line-height: 1.5; }
+
+  /* Layer colors */
+  .l-ui   { background: rgba(99,102,241,.12); }
+  .l-vm   { background: rgba(59,130,246,.10); }
+  .l-dom  { background: rgba(16,185,129,.10); }
+  .l-data { background: rgba(245,158,11,.10); }
+  .l-ext  { background: rgba(239,68,68,.08); }
+  .l-infra{ background: rgba(156,163,175,.08); }
+
+  .c-ui   { color: #818CF8; }
+  .c-vm   { color: #60A5FA; }
+  .c-dom  { color: #34D399; }
+  .c-data { color: #FCD34D; }
+  .c-ext  { color: #F87171; }
+  .c-infra{ color: #9CA3AF; }
+
+  .lcard.ui   { background: rgba(99,102,241,.15);  border-color: rgba(99,102,241,.25); }
+  .lcard.vm   { background: rgba(59,130,246,.12);  border-color: rgba(59,130,246,.25); }
+  .lcard.dom  { background: rgba(16,185,129,.12);  border-color: rgba(16,185,129,.25); }
+  .lcard.data { background: rgba(245,158,11,.12);  border-color: rgba(245,158,11,.25); }
+  .lcard.ext  { background: rgba(239,68,68,.10);   border-color: rgba(239,68,68,.25); }
+  .lcard.infra{ background: rgba(156,163,175,.10); border-color: rgba(156,163,175,.2); }
+
+  .arrow-row {
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    color: rgba(255,255,255,.3); font-size: 11px;
+    padding: 0 24px;
+  }
+  .arrow-row::before, .arrow-row::after {
+    content: ''; flex: 1; height: 1px;
+    background: rgba(255,255,255,.08);
+  }
+  .arr-icon { font-size: 18px; }
+
+  .ext-row {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;
+  }
+  .ext-card {
+    border-radius: 12px; padding: 16px;
+    border: 1px solid rgba(255,255,255,.08);
+    text-align: center;
+  }
+  .ext-card .icon { font-size: 28px; margin-bottom: 8px; }
+  .ext-card .name { font-size: 13px; font-weight: 600; color: white; margin-bottom: 4px; }
+  .ext-card .desc { font-size: 11px; line-height: 1.5; opacity: .6; }
+  .ext-gigachat { background: rgba(239,68,68,.1); border-color: rgba(239,68,68,.2); }
+  .ext-room     { background: rgba(99,102,241,.1); border-color: rgba(99,102,241,.2); }
+  .ext-yoo      { background: rgba(16,185,129,.1); border-color: rgba(16,185,129,.2); }
+
+  .infra-row {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
+  }
+  .infra-card {
+    border-radius: 12px; padding: 14px 16px;
+    background: rgba(255,255,255,.04);
+    border: 1px solid rgba(255,255,255,.07);
+    display: flex; align-items: flex-start; gap: 10px;
+  }
+  .infra-icon { font-size: 22px; flex-shrink: 0; margin-top: 1px; }
+  .infra-title { font-size: 13px; font-weight: 600; color: white; margin-bottom: 3px; }
+  .infra-sub { font-size: 11px; color: rgba(255,255,255,.5); line-height: 1.5; }
+
+  .legend {
+    margin-top: 32px; display: flex; gap: 20px; flex-wrap: wrap; justify-content: center;
+  }
+  .legend-item { display: flex; align-items: center; gap: 6px; font-size: 12px; color: rgba(255,255,255,.5); }
+  .legend-dot { width: 10px; height: 10px; border-radius: 50%; }
+</style>
+</head>
+<body>
+
+<h1>ГосПомощник — Архитектура</h1>
+<p class="subtitle">Android · Kotlin · MVVM + Clean Architecture · GigaChat API · ЮKassa</p>
+
+<div class="arch">
+
+  <!-- UI Layer -->
+  <div class="layer l-ui">
+    <div class="layer-label c-ui">UI Layer — Jetpack Compose</div>
+    <div class="layer-cards">
+      <div class="lcard ui">
+        <div class="lcard-title c-ui">MainScreen</div>
+        <div class="lcard-sub">Главное меню · категории · поиск · история</div>
+      </div>
+      <div class="lcard ui">
+        <div class="lcard-title c-ui">ChatScreen</div>
+        <div class="lcard-sub">ИИ-диалог · стриминг · карточки действий</div>
+      </div>
+      <div class="lcard ui">
+        <div class="lcard-title c-ui">DocumentScreen</div>
+        <div class="lcard-sub">Заполненный шаблон · редактирование · PDF</div>
+      </div>
+      <div class="lcard ui">
+        <div class="lcard-title c-ui">PaywallScreen</div>
+        <div class="lcard-sub">Планы подписки · ЮKassa UI · СБП</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="arrow-row">
+    <span class="arr-icon">↕</span>
+    <span>StateFlow / Events</span>
+  </div>
+
+  <!-- ViewModel Layer -->
+  <div class="layer l-vm">
+    <div class="layer-label c-vm">ViewModel Layer — MVVM · Hilt DI · Coroutines</div>
+    <div class="layer-cards">
+      <div class="lcard vm">
+        <div class="lcard-title c-vm">ChatViewModel</div>
+        <div class="lcard-sub">UiState · streaming flow · история сообщений</div>
+      </div>
+      <div class="lcard vm">
+        <div class="lcard-title c-vm">DocumentViewModel</div>
+        <div class="lcard-sub">Заполнение шаблона · генерация PDF</div>
+      </div>
+      <div class="lcard vm">
+        <div class="lcard-title c-vm">PaymentViewModel</div>
+        <div class="lcard-sub">Статус подписки · токенизация · лимиты</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="arrow-row">
+    <span class="arr-icon">↕</span>
+    <span>Use Cases</span>
+  </div>
+
+  <!-- Domain Layer -->
+  <div class="layer l-dom">
+    <div class="layer-label c-dom">Domain Layer — чистый Kotlin, без Android-зависимостей</div>
+    <div class="layer-cards">
+      <div class="lcard dom">
+        <div class="lcard-title c-dom">SendMessageUseCase</div>
+        <div class="lcard-sub">Системный промпт + история → GigaChat</div>
+      </div>
+      <div class="lcard dom">
+        <div class="lcard-title c-dom">GenerateDocumentUseCase</div>
+        <div class="lcard-sub">Шаблон + данные → PDF через iTextG</div>
+      </div>
+      <div class="lcard dom">
+        <div class="lcard-title c-dom">CheckSubscriptionUseCase</div>
+        <div class="lcard-sub">Freemium лимит · Pro статус · счётчик запросов</div>
+      </div>
+      <div class="lcard dom">
+        <div class="lcard-title c-dom">GetChatHistoryUseCase</div>
+        <div class="lcard-sub">Room DB → список сессий и сообщений</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="arrow-row">
+    <span class="arr-icon">↕</span>
+    <span>Repository interfaces</span>
+  </div>
+
+  <!-- Data Layer -->
+  <div class="layer l-data">
+    <div class="layer-label c-data">Data Layer — репозитории и источники данных</div>
+    <div class="layer-cards">
+      <div class="lcard data">
+        <div class="lcard-title c-data">GigaChatRepository</div>
+        <div class="lcard-sub">Retrofit · OAuth 2.0 · SSE streaming · retry</div>
+      </div>
+      <div class="lcard data">
+        <div class="lcard-title c-data">ChatHistoryRepository</div>
+        <div class="lcard-sub">Room DAO · ChatMessage · ChatSession</div>
+      </div>
+      <div class="lcard data">
+        <div class="lcard-title c-data">PaymentRepository</div>
+        <div class="lcard-sub">ЮKassa SDK · webhook валидация · DataStore</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="arrow-row">
+    <span class="arr-icon">↕</span>
+    <span>Внешние сервисы и хранилища</span>
+  </div>
+
+  <!-- External Services -->
+  <div class="ext-row">
+    <div class="ext-card ext-gigachat">
+      <div class="icon">🤖</div>
+      <div class="name">GigaChat API</div>
+      <div class="desc">Сбер · 1 млн токенов бесплатно · /chat/completions · SSE stream</div>
+    </div>
+    <div class="ext-card ext-room">
+      <div class="icon">💾</div>
+      <div class="name">Room Database</div>
+      <div class="desc">SQLite · локально на устройстве · без облака · полная приватность</div>
+    </div>
+    <div class="ext-card ext-yoo">
+      <div class="icon">💳</div>
+      <div class="name">ЮKassa SDK</div>
+      <div class="desc">Android SDK · СБП · карты · webhook на FastAPI</div>
+    </div>
+  </div>
+
+  <div class="arrow-row">
+    <span class="arr-icon">↕</span>
+    <span>Бэкенд — только для валидации платежей</span>
+  </div>
+
+  <!-- Infra -->
+  <div class="infra-row">
+    <div class="infra-card">
+      <div class="infra-icon">⚡</div>
+      <div>
+        <div class="infra-title">FastAPI Backend</div>
+        <div class="infra-sub">Python · Amvera Cloud · бесплатный тариф<br>Эндпоинты: /subscribe, /verify, /webhook-yukassa</div>
+      </div>
+    </div>
+    <div class="infra-card">
+      <div class="infra-icon">🏪</div>
+      <div>
+        <div class="infra-title">RuStore + APK</div>
+        <div class="infra-sub">Основной канал дистрибуции · бесплатная публикация<br>APK-зеркало через GitHub Pages</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="legend">
+  <div class="legend-item"><div class="legend-dot" style="background:#818CF8;"></div>UI / Compose</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#60A5FA;"></div>ViewModel</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#34D399;"></div>Domain</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#FCD34D;"></div>Data</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#F87171;"></div>Внешние API</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#9CA3AF;"></div>Инфраструктура</div>
+</div>
+
+</body>
+</html>

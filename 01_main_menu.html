@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ГосПомощник — Главное меню</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;500;600&family=Manrope:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --brand: #4338CA;
+    --brand-light: #EEF2FF;
+    --brand-mid: #C7D2FE;
+    --green: #059669; --green-light: #D1FAE5;
+    --amber: #B45309; --amber-light: #FEF3C7;
+    --blue: #1D4ED8; --blue-light: #DBEAFE;
+    --red: #B91C1C; --red-light: #FEE2E2;
+    --gray: #374151; --gray-light: #F3F4F6;
+    --text: #111827; --text2: #6B7280;
+    --bg: #F9FAFB; --card: #FFFFFF;
+    --border: #E5E7EB;
+    --radius: 14px; --radius-sm: 8px;
+    --shadow: 0 1px 3px rgba(0,0,0,.08), 0 1px 2px rgba(0,0,0,.06);
+  }
+  body {
+    font-family: 'Manrope', sans-serif;
+    background: #E8EAF0;
+    display: flex; align-items: center; justify-content: center;
+    min-height: 100vh; padding: 2rem;
+  }
+  .phone {
+    width: 375px;
+    background: var(--bg);
+    border-radius: 40px;
+    overflow: hidden;
+    box-shadow: 0 32px 80px rgba(67,56,202,.18), 0 8px 24px rgba(0,0,0,.12);
+    border: 1px solid rgba(255,255,255,.6);
+  }
+  .status-bar {
+    background: var(--brand);
+    padding: 12px 24px 0;
+    display: flex; justify-content: space-between; align-items: center;
+    color: white; font-size: 12px; font-weight: 600;
+  }
+  .header {
+    background: linear-gradient(160deg, #4338CA 0%, #3730A3 60%, #312E81 100%);
+    padding: 20px 24px 28px;
+  }
+  .header-top {
+    display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;
+  }
+  .logo {
+    font-family: 'Unbounded', sans-serif;
+    font-size: 13px; font-weight: 600;
+    color: rgba(255,255,255,.9); letter-spacing: .5px;
+  }
+  .badge-free {
+    background: rgba(255,255,255,.15);
+    color: rgba(255,255,255,.9);
+    font-size: 10px; font-weight: 600;
+    padding: 3px 10px; border-radius: 20px;
+    border: 1px solid rgba(255,255,255,.2);
+  }
+  .header h1 {
+    font-family: 'Unbounded', sans-serif;
+    font-size: 18px; font-weight: 600;
+    color: white; margin-bottom: 6px; line-height: 1.3;
+  }
+  .header p { font-size: 13px; color: rgba(255,255,255,.7); margin-bottom: 16px; }
+  .search {
+    background: rgba(255,255,255,.12);
+    border: 1px solid rgba(255,255,255,.2);
+    border-radius: var(--radius-sm);
+    padding: 10px 14px;
+    display: flex; align-items: center; gap: 8px;
+    backdrop-filter: blur(8px);
+  }
+  .search i { font-size: 16px; color: rgba(255,255,255,.6); }
+  .search span { font-size: 13px; color: rgba(255,255,255,.5); }
+
+  .body { padding: 20px 20px 0; }
+  .section-title {
+    font-size: 11px; font-weight: 600; color: var(--text2);
+    text-transform: uppercase; letter-spacing: 1px;
+    margin-bottom: 12px;
+  }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+  .card {
+    border-radius: var(--radius);
+    padding: 14px;
+    cursor: pointer;
+    transition: transform .15s, box-shadow .15s;
+    position: relative; overflow: hidden;
+  }
+  .card:active { transform: scale(.97); }
+  .card::after {
+    content: ''; position: absolute;
+    inset: 0; border-radius: var(--radius);
+    border: 1px solid rgba(255,255,255,.4);
+    pointer-events: none;
+  }
+  .card .icon { font-size: 24px; margin-bottom: 8px; display: block; }
+  .card .label { font-size: 13px; font-weight: 600; color: inherit; display: block; margin-bottom: 2px; }
+  .card .sub { font-size: 11px; opacity: .75; }
+
+  .card-purple { background: var(--brand-light); color: var(--brand); }
+  .card-green  { background: var(--green-light); color: var(--green); }
+  .card-amber  { background: var(--amber-light); color: var(--amber); }
+  .card-blue   { background: var(--blue-light);  color: var(--blue); }
+  .card-red    { background: var(--red-light);   color: var(--red); }
+  .card-gray   { background: var(--gray-light);  color: var(--gray); }
+
+  .recent { margin-bottom: 20px; }
+  .recent-item {
+    display: flex; align-items: center; gap: 12px;
+    padding: 12px; background: white;
+    border-radius: var(--radius-sm);
+    margin-bottom: 8px;
+    box-shadow: var(--shadow);
+    cursor: pointer;
+  }
+  .recent-icon {
+    width: 36px; height: 36px; border-radius: 10px;
+    background: var(--brand-light);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .recent-icon i { font-size: 18px; color: var(--brand); }
+  .recent-text { flex: 1; }
+  .recent-text .q { font-size: 13px; font-weight: 500; color: var(--text); }
+  .recent-text .t { font-size: 11px; color: var(--text2); margin-top: 2px; }
+  .recent-arrow { font-size: 16px; color: var(--text2); }
+
+  .navbar {
+    background: white;
+    border-top: 1px solid var(--border);
+    padding: 10px 0 20px;
+    display: flex; justify-content: space-around;
+  }
+  .nav-item { display: flex; flex-direction: column; align-items: center; gap: 3px; cursor: pointer; }
+  .nav-item i { font-size: 22px; }
+  .nav-item span { font-size: 10px; font-weight: 500; }
+  .nav-item.active i, .nav-item.active span { color: var(--brand); }
+  .nav-item:not(.active) i, .nav-item:not(.active) span { color: var(--text2); }
+</style>
+</head>
+<body>
+<div class="phone">
+  <div class="status-bar">
+    <span>9:41</span>
+    <div style="display:flex;gap:6px;align-items:center;">
+      <i class="ti ti-signal-3g" style="font-size:14px;"></i>
+      <i class="ti ti-wifi" style="font-size:14px;"></i>
+      <i class="ti ti-battery-2" style="font-size:14px;"></i>
+    </div>
+  </div>
+
+  <div class="header">
+    <div class="header-top">
+      <span class="logo">ГосПомощник</span>
+      <span class="badge-free">10 / 10 запросов</span>
+    </div>
+    <h1>Чем могу помочь?</h1>
+    <p>ИИ-консультант по законодательству РФ</p>
+    <div class="search">
+      <i class="ti ti-search"></i>
+      <span>Задайте вопрос...</span>
+    </div>
+  </div>
+
+  <div class="body">
+    <div class="section-title">Категории</div>
+    <div class="grid">
+      <div class="card card-purple">
+        <i class="ti ti-car icon"></i>
+        <span class="label">ГИБДД</span>
+        <span class="sub">Штрафы, лишение прав</span>
+      </div>
+      <div class="card card-green">
+        <i class="ti ti-building-community icon"></i>
+        <span class="label">ЖКХ</span>
+        <span class="sub">УК, квитанции, нормы</span>
+      </div>
+      <div class="card card-amber">
+        <i class="ti ti-briefcase icon"></i>
+        <span class="label">Трудовые</span>
+        <span class="sub">Права, увольнение</span>
+      </div>
+      <div class="card card-blue">
+        <i class="ti ti-heart icon"></i>
+        <span class="label">Льготы</span>
+        <span class="sub">Субсидии, пособия</span>
+      </div>
+      <div class="card card-red">
+        <i class="ti ti-scale icon"></i>
+        <span class="label">Суд</span>
+        <span class="sub">Иски, обжалование</span>
+      </div>
+      <div class="card card-gray">
+        <i class="ti ti-file-text icon"></i>
+        <span class="label">Документы</span>
+        <span class="sub">Шаблоны заявлений</span>
+      </div>
+    </div>
+
+    <div class="section-title">Недавние вопросы</div>
+    <div class="recent">
+      <div class="recent-item">
+        <div class="recent-icon"><i class="ti ti-car"></i></div>
+        <div class="recent-text">
+          <div class="q">Как обжаловать штраф ГИБДД?</div>
+          <div class="t">Сегодня, 14:23</div>
+        </div>
+        <i class="ti ti-chevron-right recent-arrow"></i>
+      </div>
+      <div class="recent-item">
+        <div class="recent-icon"><i class="ti ti-building-community"></i></div>
+        <div class="recent-text">
+          <div class="q">УК не делает ремонт в подъезде</div>
+          <div class="t">Вчера, 19:41</div>
+        </div>
+        <i class="ti ti-chevron-right recent-arrow"></i>
+      </div>
+    </div>
+  </div>
+
+  <div class="navbar">
+    <div class="nav-item active">
+      <i class="ti ti-home"></i><span>Главная</span>
+    </div>
+    <div class="nav-item">
+      <i class="ti ti-message-circle"></i><span>Чаты</span>
+    </div>
+    <div class="nav-item">
+      <i class="ti ti-file"></i><span>Документы</span>
+    </div>
+    <div class="nav-item">
+      <i class="ti ti-user"></i><span>Профиль</span>
+    </div>
+  </div>
+</div>
+</body>
+</html>

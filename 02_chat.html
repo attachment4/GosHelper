@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ГосПомощник — Чат с ИИ</title>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;600&family=Manrope:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --brand: #4338CA; --brand-light: #EEF2FF; --brand-mid: #C7D2FE;
+    --text: #111827; --text2: #6B7280;
+    --bg: #F9FAFB; --card: #FFFFFF; --border: #E5E7EB;
+    --radius: 14px; --radius-sm: 8px;
+  }
+  body {
+    font-family: 'Manrope', sans-serif;
+    background: #E8EAF0;
+    display: flex; align-items: center; justify-content: center;
+    min-height: 100vh; padding: 2rem;
+  }
+  .phone {
+    width: 375px; background: var(--bg);
+    border-radius: 40px; overflow: hidden;
+    box-shadow: 0 32px 80px rgba(67,56,202,.18), 0 8px 24px rgba(0,0,0,.12);
+    border: 1px solid rgba(255,255,255,.6);
+    display: flex; flex-direction: column;
+  }
+  .status-bar {
+    background: var(--brand); padding: 12px 24px 0;
+    display: flex; justify-content: space-between; align-items: center;
+    color: white; font-size: 12px; font-weight: 600; flex-shrink: 0;
+  }
+  .header {
+    background: linear-gradient(160deg, #4338CA 0%, #3730A3 100%);
+    padding: 14px 20px 16px; flex-shrink: 0;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .back-btn {
+    width: 32px; height: 32px; border-radius: 50%;
+    background: rgba(255,255,255,.15); display: flex;
+    align-items: center; justify-content: center;
+    cursor: pointer; flex-shrink: 0;
+  }
+  .back-btn i { font-size: 16px; color: white; }
+  .header-info { flex: 1; }
+  .header-info .title { font-family: 'Unbounded', sans-serif; font-size: 13px; font-weight: 600; color: white; }
+  .header-info .sub { font-size: 11px; color: rgba(255,255,255,.7); margin-top: 2px; }
+  .ai-avatar {
+    width: 34px; height: 34px; border-radius: 50%;
+    background: rgba(255,255,255,.2);
+    display: flex; align-items: center; justify-content: center;
+    border: 2px solid rgba(255,255,255,.3); flex-shrink: 0;
+  }
+  .ai-avatar i { font-size: 18px; color: white; }
+
+  .messages {
+    flex: 1; padding: 16px; overflow-y: auto;
+    display: flex; flex-direction: column; gap: 12px;
+    background: var(--bg); min-height: 420px;
+  }
+  .msg { display: flex; gap: 8px; align-items: flex-end; }
+  .msg.user { flex-direction: row-reverse; }
+  .avatar {
+    width: 28px; height: 28px; border-radius: 50%;
+    background: var(--brand-light); display: flex;
+    align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .avatar i { font-size: 14px; color: var(--brand); }
+  .bubble {
+    max-width: 240px; padding: 10px 13px;
+    border-radius: 16px; font-size: 13px; line-height: 1.55;
+  }
+  .bubble.ai {
+    background: white; color: var(--text);
+    border-radius: 16px 16px 16px 4px;
+    box-shadow: 0 1px 3px rgba(0,0,0,.08);
+  }
+  .bubble.user {
+    background: var(--brand); color: white;
+    border-radius: 16px 16px 4px 16px;
+  }
+  .bubble .law-ref {
+    display: inline-block; background: var(--brand-light);
+    color: var(--brand); font-size: 11px; font-weight: 600;
+    padding: 2px 8px; border-radius: 6px; margin-top: 6px;
+  }
+  .action-card {
+    display: flex; align-items: center; gap: 8px;
+    background: var(--brand-light); border-radius: var(--radius-sm);
+    padding: 8px 12px; margin-top: 8px; cursor: pointer;
+    border: 1px solid var(--brand-mid);
+  }
+  .action-card i { font-size: 16px; color: var(--brand); flex-shrink: 0; }
+  .action-card span { font-size: 12px; font-weight: 600; color: var(--brand); }
+  .action-card .arrow { margin-left: auto; font-size: 14px; color: var(--brand); }
+
+  .typing { display: flex; gap: 4px; padding: 12px 13px; }
+  .dot {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: var(--brand-mid); animation: bounce .9s infinite;
+  }
+  .dot:nth-child(2) { animation-delay: .15s; }
+  .dot:nth-child(3) { animation-delay: .3s; }
+  @keyframes bounce { 0%,60%,100%{transform:translateY(0)} 30%{transform:translateY(-5px)} }
+
+  .time-label {
+    text-align: center; font-size: 11px; color: var(--text2);
+    background: var(--border); border-radius: 20px;
+    padding: 3px 12px; align-self: center;
+  }
+
+  .input-area {
+    background: white; border-top: 1px solid var(--border);
+    padding: 10px 14px 22px;
+    display: flex; align-items: center; gap: 8px; flex-shrink: 0;
+  }
+  .input-field {
+    flex: 1; background: var(--bg); border: 1px solid var(--border);
+    border-radius: 22px; padding: 9px 14px;
+    font-size: 13px; font-family: 'Manrope', sans-serif;
+    color: var(--text); outline: none;
+  }
+  .input-field::placeholder { color: var(--text2); }
+  .btn-icon {
+    width: 36px; height: 36px; border-radius: 50%;
+    background: var(--brand); border: none; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .btn-icon i { font-size: 16px; color: white; }
+
+  .navbar {
+    background: white; border-top: 1px solid var(--border);
+    padding: 10px 0 20px; display: flex; justify-content: space-around; flex-shrink: 0;
+  }
+  .nav-item { display: flex; flex-direction: column; align-items: center; gap: 3px; cursor: pointer; }
+  .nav-item i { font-size: 22px; }
+  .nav-item span { font-size: 10px; font-weight: 500; }
+  .nav-item.active i, .nav-item.active span { color: var(--brand); }
+  .nav-item:not(.active) i, .nav-item:not(.active) span { color: var(--text2); }
+</style>
+</head>
+<body>
+<div class="phone">
+  <div class="status-bar">
+    <span>9:41</span>
+    <div style="display:flex;gap:6px;align-items:center;">
+      <i class="ti ti-signal-3g" style="font-size:14px;"></i>
+      <i class="ti ti-wifi" style="font-size:14px;"></i>
+      <i class="ti ti-battery-2" style="font-size:14px;"></i>
+    </div>
+  </div>
+
+  <div class="header">
+    <div class="back-btn"><i class="ti ti-arrow-left"></i></div>
+    <div class="header-info">
+      <div class="title">ГИБДД — Штрафы</div>
+      <div class="sub">ИИ-консультант · онлайн</div>
+    </div>
+    <div class="ai-avatar"><i class="ti ti-robot"></i></div>
+  </div>
+
+  <div class="messages">
+    <span class="time-label">Сегодня, 14:23</span>
+
+    <div class="msg">
+      <div class="avatar"><i class="ti ti-robot"></i></div>
+      <div class="bubble ai">
+        Здравствуйте! Я помогу разобраться с вопросами ГИБДД. Расскажите, что случилось?
+      </div>
+    </div>
+
+    <div class="msg user">
+      <div class="bubble user">
+        Пришёл штраф, но я там не ехал. Как обжаловать?
+      </div>
+    </div>
+
+    <div class="msg">
+      <div class="avatar"><i class="ti ti-robot"></i></div>
+      <div class="bubble ai">
+        Понял вас. Это распространённая ситуация — чаще всего ошибка камеры или чужой автомобиль.<br><br>
+        <span class="law-ref">ст. 32.2 КоАП РФ</span><br><br>
+        У вас есть <strong>10 дней</strong> с момента получения постановления на подачу жалобы. Подать можно:
+        <br>• в ГИБДД, вынесшее штраф
+        <br>• в районный суд по месту нарушения
+        <div class="action-card">
+          <i class="ti ti-file-text"></i>
+          <span>Создать жалобу автоматически</span>
+          <i class="ti ti-chevron-right arrow"></i>
+        </div>
+      </div>
+    </div>
+
+    <div class="msg user">
+      <div class="bubble user">
+        Отлично, создай жалобу
+      </div>
+    </div>
+
+    <div class="msg">
+      <div class="avatar"><i class="ti ti-robot"></i></div>
+      <div class="bubble ai" style="background:white;">
+        <div class="typing">
+          <div class="dot"></div>
+          <div class="dot"></div>
+          <div class="dot"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="input-area">
+    <input class="input-field" type="text" placeholder="Ваш вопрос...">
+    <button class="btn-icon" style="background:rgba(67,56,202,.12);">
+      <i class="ti ti-microphone" style="color:var(--brand);"></i>
+    </button>
+    <button class="btn-icon">
+      <i class="ti ti-send"></i>
+    </button>
+  </div>
+
+  <div class="navbar">
+    <div class="nav-item"><i class="ti ti-home"></i><span>Главная</span></div>
+    <div class="nav-item active"><i class="ti ti-message-circle"></i><span>Чаты</span></div>
+    <div class="nav-item"><i class="ti ti-file"></i><span>Документы</span></div>
+    <div class="nav-item"><i class="ti ti-user"></i><span>Профиль</span></div>
+  </div>
+</div>
+</body>
+</html>

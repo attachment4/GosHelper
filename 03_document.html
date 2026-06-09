@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ГосПомощник — Генератор документов</title>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;600&family=Manrope:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --brand: #4338CA; --brand-light: #EEF2FF; --brand-mid: #C7D2FE;
+    --green: #059669; --green-light: #D1FAE5;
+    --text: #111827; --text2: #6B7280;
+    --bg: #F9FAFB; --card: #FFFFFF; --border: #E5E7EB;
+    --radius: 14px; --radius-sm: 8px;
+    --shadow: 0 1px 3px rgba(0,0,0,.08);
+  }
+  body {
+    font-family: 'Manrope', sans-serif;
+    background: #E8EAF0;
+    display: flex; align-items: center; justify-content: center;
+    min-height: 100vh; padding: 2rem;
+  }
+  .phone {
+    width: 375px; background: var(--bg);
+    border-radius: 40px; overflow: hidden;
+    box-shadow: 0 32px 80px rgba(67,56,202,.18), 0 8px 24px rgba(0,0,0,.12);
+    border: 1px solid rgba(255,255,255,.6);
+    display: flex; flex-direction: column;
+  }
+  .status-bar {
+    background: var(--brand); padding: 12px 24px 0;
+    display: flex; justify-content: space-between; align-items: center;
+    color: white; font-size: 12px; font-weight: 600; flex-shrink: 0;
+  }
+  .header {
+    background: linear-gradient(160deg, #4338CA 0%, #3730A3 100%);
+    padding: 14px 20px 18px; flex-shrink: 0;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .back-btn {
+    width: 32px; height: 32px; border-radius: 50%;
+    background: rgba(255,255,255,.15);
+    display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0;
+  }
+  .back-btn i { font-size: 16px; color: white; }
+  .header-info .title { font-family: 'Unbounded', sans-serif; font-size: 13px; font-weight: 600; color: white; }
+  .header-info .sub { font-size: 11px; color: rgba(255,255,255,.7); margin-top: 2px; }
+
+  .body { flex: 1; padding: 16px; overflow-y: auto; }
+
+  .ai-banner {
+    background: var(--brand-light); border: 1px solid var(--brand-mid);
+    border-radius: var(--radius); padding: 12px 14px;
+    display: flex; gap: 10px; align-items: flex-start; margin-bottom: 16px;
+  }
+  .ai-banner i { font-size: 18px; color: var(--brand); flex-shrink: 0; margin-top: 1px; }
+  .ai-banner p { font-size: 12px; color: var(--brand); line-height: 1.55; }
+
+  .form-group { margin-bottom: 12px; }
+  .form-label { font-size: 11px; font-weight: 600; color: var(--text2); margin-bottom: 5px; display: block; text-transform: uppercase; letter-spacing: .5px; }
+  .form-field {
+    width: 100%; background: white; border: 1px solid var(--border);
+    border-radius: var(--radius-sm); padding: 10px 12px;
+    font-size: 13px; font-family: 'Manrope', sans-serif;
+    color: var(--text); box-shadow: var(--shadow);
+  }
+  .form-field.editable {
+    border-color: var(--brand-mid); background: var(--brand-light);
+    color: var(--brand);
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .form-field.editable i { font-size: 14px; }
+  .form-textarea {
+    width: 100%; background: white; border: 1px solid var(--border);
+    border-radius: var(--radius-sm); padding: 10px 12px;
+    font-size: 12px; font-family: 'Manrope', sans-serif;
+    color: var(--text); line-height: 1.55; resize: none; min-height: 64px;
+    box-shadow: var(--shadow);
+  }
+
+  .doc-preview {
+    background: white; border-radius: var(--radius);
+    border: 1px solid var(--border); padding: 14px;
+    margin-bottom: 14px; box-shadow: var(--shadow);
+  }
+  .doc-preview-header {
+    display: flex; align-items: center; gap: 8px; margin-bottom: 10px;
+    padding-bottom: 10px; border-bottom: 1px dashed var(--border);
+  }
+  .doc-preview-header i { font-size: 20px; color: var(--brand); }
+  .doc-preview-header span { font-size: 13px; font-weight: 600; color: var(--text); }
+  .doc-meta { font-size: 11px; color: var(--text2); line-height: 1.7; }
+
+  .divider { height: 1px; background: var(--border); margin: 14px 0; }
+
+  .btn-primary {
+    width: 100%; padding: 13px;
+    background: var(--brand); color: white;
+    border: none; border-radius: var(--radius);
+    font-size: 14px; font-weight: 600; font-family: 'Manrope', sans-serif;
+    cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;
+    margin-bottom: 8px;
+  }
+  .btn-primary i { font-size: 18px; }
+  .btn-secondary {
+    width: 100%; padding: 13px;
+    background: white; color: var(--text);
+    border: 1px solid var(--border); border-radius: var(--radius);
+    font-size: 14px; font-weight: 500; font-family: 'Manrope', sans-serif;
+    cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;
+    margin-bottom: 12px;
+  }
+  .btn-secondary i { font-size: 18px; }
+
+  .privacy-note {
+    display: flex; align-items: center; gap: 6px; justify-content: center;
+  }
+  .privacy-note i { font-size: 13px; color: var(--text2); }
+  .privacy-note span { font-size: 11px; color: var(--text2); }
+
+  .navbar {
+    background: white; border-top: 1px solid var(--border);
+    padding: 10px 0 20px; display: flex; justify-content: space-around; flex-shrink: 0;
+  }
+  .nav-item { display: flex; flex-direction: column; align-items: center; gap: 3px; cursor: pointer; }
+  .nav-item i { font-size: 22px; }
+  .nav-item span { font-size: 10px; font-weight: 500; }
+  .nav-item.active i, .nav-item.active span { color: var(--brand); }
+  .nav-item:not(.active) i, .nav-item:not(.active) span { color: var(--text2); }
+</style>
+</head>
+<body>
+<div class="phone">
+  <div class="status-bar">
+    <span>9:41</span>
+    <div style="display:flex;gap:6px;align-items:center;">
+      <i class="ti ti-signal-3g" style="font-size:14px;"></i>
+      <i class="ti ti-wifi" style="font-size:14px;"></i>
+      <i class="ti ti-battery-2" style="font-size:14px;"></i>
+    </div>
+  </div>
+
+  <div class="header">
+    <div class="back-btn"><i class="ti ti-arrow-left"></i></div>
+    <div class="header-info">
+      <div class="title">Жалоба в ГИБДД</div>
+      <div class="sub">Шаблон заявления об обжаловании</div>
+    </div>
+  </div>
+
+  <div class="body">
+    <div class="ai-banner">
+      <i class="ti ti-sparkles"></i>
+      <p>ИИ заполнил шаблон на основе вашего диалога. Проверьте данные и при необходимости скорректируйте.</p>
+    </div>
+
+    <div class="doc-preview">
+      <div class="doc-preview-header">
+        <i class="ti ti-file-description"></i>
+        <span>Жалоба на постановление об АП</span>
+      </div>
+      <div class="doc-meta">
+        📌 Тип: Обжалование штрафа ГИБДД<br>
+        📅 Дата: 8 июня 2026 г.<br>
+        ⚖️ Основание: ст. 30.1–30.3 КоАП РФ
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Кому</label>
+      <div class="form-field">Начальнику УГИБДД по г. Москве</div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">От кого</label>
+      <div class="form-field">Иванов Иван Иванович</div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Номер постановления</label>
+      <div class="form-field editable">
+        <span>18810177240312345678</span>
+        <i class="ti ti-edit"></i>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Дата постановления</label>
+      <div class="form-field editable">
+        <span>03.12.2025</span>
+        <i class="ti ti-edit"></i>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Суть жалобы</label>
+      <textarea class="form-textarea">В указанное в постановлении время я не управлял транспортным средством, указанным в постановлении. Транспортное средство не находилось на месте предполагаемого нарушения. Прошу отменить постановление в связи с отсутствием состава административного правонарушения и недоказанностью моей вины.</textarea>
+    </div>
+
+    <div class="divider"></div>
+
+    <button class="btn-primary">
+      <i class="ti ti-file-download"></i>
+      Скачать PDF
+    </button>
+    <button class="btn-secondary">
+      <i class="ti ti-share"></i>
+      Поделиться
+    </button>
+
+    <div class="privacy-note">
+      <i class="ti ti-lock"></i>
+      <span>Данные хранятся только на вашем устройстве</span>
+    </div>
+  </div>
+
+  <div class="navbar">
+    <div class="nav-item"><i class="ti ti-home"></i><span>Главная</span></div>
+    <div class="nav-item"><i class="ti ti-message-circle"></i><span>Чаты</span></div>
+    <div class="nav-item active"><i class="ti ti-file"></i><span>Документы</span></div>
+    <div class="nav-item"><i class="ti ti-user"></i><span>Профиль</span></div>
+  </div>
+</div>
+</body>
+</html>
