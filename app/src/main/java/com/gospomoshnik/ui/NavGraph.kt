@@ -14,8 +14,9 @@ import com.gospomoshnik.ui.profile.ProfileScreen
 
 sealed class Screen(val route: String) {
     object Main     : Screen("main")
-    object Chat     : Screen("chat/{category}") {
-        fun createRoute(category: String) = "chat/$category"
+    object Chat     : Screen("chat/{category}?sessionId={sessionId}") {
+        fun createRoute(category: String, sessionId: Long = 0L) =
+            "chat/$category?sessionId=$sessionId"
     }
     object Document : Screen("document/{sessionId}") {
         fun createRoute(sessionId: Long) = "document/$sessionId"
@@ -36,8 +37,8 @@ fun NavGraph(navController: NavHostController) {
                 onCategoryClick = { category ->
                     navController.navigate(Screen.Chat.createRoute(category))
                 },
-                onHistoryItemClick = { sessionId ->
-                    navController.navigate(Screen.Chat.createRoute("session/$sessionId"))
+                onHistoryItemClick = { category, sessionId ->
+                    navController.navigate(Screen.Chat.createRoute(category, sessionId))
                 },
                 onProfileClick = {
                     navController.navigate(Screen.Profile.route)
@@ -47,7 +48,10 @@ fun NavGraph(navController: NavHostController) {
 
         composable(
             route     = Screen.Chat.route,
-            arguments = listOf(navArgument("category") { type = NavType.StringType })
+            arguments = listOf(
+                navArgument("category")  { type = NavType.StringType },
+                navArgument("sessionId") { type = NavType.LongType; defaultValue = 0L }
+            )
         ) { backStack ->
             val category = backStack.arguments?.getString("category") ?: "general"
             ChatScreen(

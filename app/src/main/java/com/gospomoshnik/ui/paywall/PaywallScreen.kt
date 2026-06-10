@@ -22,14 +22,15 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.gospomoshnik.ui.theme.GosColors
 
-private val DarkBrand  = Color(0xFF1E1B4B)
-private val BrandColor = Color(0xFF4338CA)
-private val BrandLight = Color(0xFFEEF2FF)
-private val GreenColor = Color(0xFF059669)
-private val GreenLight = Color(0xFFD1FAE5)
-private val GoldColor  = Color(0xFFD97706)
-private val GoldLight  = Color(0xFFFEF3C7)
+private val DarkBrand  = GosColors.BlueDark
+private val BrandColor = GosColors.Blue
+private val BrandLight = GosColors.BlueLight
+private val GreenColor = GosColors.Green
+private val GreenLight = GosColors.GreenLight
+private val GoldColor  = GosColors.Amber
+private val GoldLight  = GosColors.AmberLight
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -39,7 +40,7 @@ fun PaywallScreen(onClose: () -> Unit) {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFFF9FAFB))
+            .background(GosColors.Background)
             .verticalScroll(rememberScrollState())
     ) {
         // Hero-секция
@@ -88,7 +89,7 @@ private fun HeroSection(onClose: () -> Unit) {
             .fillMaxWidth()
             .background(
                 Brush.linearGradient(
-                    listOf(Color(0xFF1E1B4B), Color(0xFF312E81), Color(0xFF3730A3))
+                    listOf(Color(0xFF062B6E), GosColors.BlueDark, GosColors.Blue)
                 )
             )
             .padding(24.dp)
@@ -169,12 +170,12 @@ private fun FeaturesList() {
                     Icon(Icons.Default.Check, contentDescription = null, tint = GreenColor, modifier = Modifier.size(13.dp))
                 }
                 Column {
-                    Text(title, fontSize = 13.sp, fontWeight = FontWeight.Medium, color = Color(0xFF111827))
-                    Text(sub, fontSize = 11.sp, color = Color(0xFF6B7280))
+                    Text(title, fontSize = 13.sp, fontWeight = FontWeight.Medium, color = GosColors.TextPrimary)
+                    Text(sub, fontSize = 11.sp, color = GosColors.TextSecond)
                 }
             }
             if (i < features.size - 1) {
-                HorizontalDivider(color = Color(0xFFE5E7EB))
+                HorizontalDivider(color = GosColors.Divider)
             }
         }
     }
@@ -222,7 +223,7 @@ private fun PlanCard(
     modifier: Modifier,
     onClick: () -> Unit
 ) {
-    val borderColor = if (selected) BrandColor else Color(0xFFE5E7EB)
+    val borderColor = if (selected) BrandColor else GosColors.Divider
     val borderWidth = if (selected) 2.dp else 1.5.dp
 
     Box(modifier = modifier) {
@@ -238,15 +239,15 @@ private fun PlanCard(
                 modifier            = Modifier.padding(14.dp).padding(top = if (badge != null) 10.dp else 0.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Text(period, fontSize = 11.sp, color = Color(0xFF6B7280))
+                Text(period, fontSize = 11.sp, color = GosColors.TextSecond)
                 Spacer(Modifier.height(4.dp))
                 Text(
                     text       = "$price ₽",
                     fontSize   = 22.sp,
                     fontWeight = FontWeight.Bold,
-                    color      = if (selected) BrandColor else Color(0xFF111827)
+                    color      = if (selected) BrandColor else GosColors.TextPrimary
                 )
-                Text(perMonth, fontSize = 11.sp, color = Color(0xFF6B7280))
+                Text(perMonth, fontSize = 11.sp, color = GosColors.TextSecond)
                 saving?.let {
                     Spacer(Modifier.height(4.dp))
                     Text(it, fontSize = 11.sp, fontWeight = FontWeight.SemiBold, color = GreenColor)
@@ -280,9 +281,9 @@ private fun PaymentBadges() {
         verticalAlignment     = Alignment.CenterVertically
     ) {
         listOf(
-            Triple("СБП",   Color(0xFF065F46), Color(0xFFD1FAE5)),
-            Triple("ЮKassa", Color(0xFF312E81), BrandLight),
-            Triple("Карта",  Color(0xFF374151), Color(0xFFF3F4F6))
+            Triple("СБП",   GosColors.Green, GosColors.GreenLight),
+            Triple("ЮKassa", GosColors.BlueDark, BrandLight),
+            Triple("Карта",  GosColors.TextPrimary, GosColors.Background)
         ).forEach { (label, textColor, bgColor) ->
             Surface(
                 shape    = RoundedCornerShape(8.dp),
@@ -308,7 +309,7 @@ private fun FreeNote() {
         color    = GoldLight,
         modifier = Modifier
             .fillMaxWidth()
-            .border(1.dp, Color(0xFFFDE68A), RoundedCornerShape(10.dp))
+            .border(1.dp, GosColors.AmberLight, RoundedCornerShape(10.dp))
     ) {
         Text(
             text      = "🎁 Бесплатно: 10 вопросов каждый месяц\nБез подписки — без скрытых списаний",
@@ -327,7 +328,7 @@ private fun Disclaimer() {
     Text(
         text      = "Подписка продлевается автоматически.\nОтменить можно в любой момент в профиле.",
         fontSize  = 11.sp,
-        color     = Color(0xFF9CA3AF),
+        color     = GosColors.TextSecond,
         textAlign = TextAlign.Center,
         lineHeight = 17.sp,
         modifier  = Modifier.fillMaxWidth()

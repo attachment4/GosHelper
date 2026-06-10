@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<network-security-config>
+    <!--
+        Серверы GigaChat (*.sberbank.ru) используют сертификат, выпущенный
+        НУЦ Минцифры РФ. Этого корневого сертификата нет в системном
+        хранилище Android, поэтому добавляем его явно — НЕ отключая
+        проверку TLS. Доверяем системным CA + российскому корню.
+
+        Перед сборкой положите файл russian_trusted_root_ca.pem в res/raw/
+        (скачать: https://www.gosuslugi.ru/crt — "Сертификат (.pem)").
+    -->
+    <domain-config>
+        <domain includeSubdomains="true">sberbank.ru</domain>
+        <domain includeSubdomains="true">devices.sberbank.ru</domain>
+        <trust-anchors>
+            <certificates src="system" />
+            <!-- Раскомментируйте после добавления res/raw/russian_trusted_root_ca.pem:
+            <certificates src="@raw/russian_trusted_root_ca" />
+            -->
+        </trust-anchors>
+    </domain-config>
+</network-security-config>

@@ -22,11 +22,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.gospomoshnik.domain.model.ChatMessage
+import com.gospomoshnik.ui.theme.GosColors
 import kotlinx.coroutines.launch
 
-private val BrandColor = Color(0xFF4338CA)
-private val BrandLight = Color(0xFFEEF2FF)
-private val BrandMid   = Color(0xFFC7D2FE)
+private val BrandColor = GosColors.Blue
+private val BrandLight = GosColors.BlueLight
+private val BrandMid   = GosColors.BlueMid
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -110,7 +111,7 @@ private fun ChatTopBar(
         modifier = Modifier
             .fillMaxWidth()
             .background(
-                Brush.linearGradient(listOf(Color(0xFF4338CA), Color(0xFF3730A3)))
+                Brush.linearGradient(listOf(GosColors.Blue, GosColors.BlueDark))
             )
     ) {
         TopAppBar(
@@ -179,7 +180,7 @@ private fun MessageBubble(msg: ChatMessage) {
         ) {
             Text(
                 text       = msg.content,
-                color      = if (isUser) Color.White else Color(0xFF111827),
+                color      = if (isUser) Color.White else GosColors.TextPrimary,
                 fontSize   = 13.sp,
                 lineHeight = 20.sp,
                 modifier   = Modifier.padding(horizontal = 13.dp, vertical = 10.dp)
@@ -240,13 +241,13 @@ private fun WelcomePlaceholder(category: String) {
                 text       = "Задайте вопрос по теме\n«${categoryTitle(category)}»",
                 fontSize   = 14.sp,
                 fontWeight = FontWeight.Medium,
-                color      = Color(0xFF374151)
+                color      = GosColors.TextPrimary
             )
             Spacer(Modifier.height(6.dp))
             Text(
                 text       = "ИИ ответит и при необходимости\nпоможет составить документ",
                 fontSize   = 12.sp,
-                color      = Color(0xFF6B7280),
+                color      = GosColors.TextSecond,
                 lineHeight = 18.sp
             )
         }

@@ -23,12 +23,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.gospomoshnik.ui.theme.GosColors
 
-private val BrandColor = Color(0xFF4338CA)
-private val BrandLight = Color(0xFFEEF2FF)
-private val BrandMid   = Color(0xFFC7D2FE)
-private val GreenColor = Color(0xFF059669)
-private val GreenLight = Color(0xFFD1FAE5)
+private val BrandColor = GosColors.Blue
+private val BrandLight = GosColors.BlueLight
+private val BrandMid   = GosColors.BlueMid
+private val GreenColor = GosColors.Green
+private val GreenLight = GosColors.GreenLight
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -43,7 +44,7 @@ fun DocumentScreen(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(Brush.linearGradient(listOf(Color(0xFF4338CA), Color(0xFF3730A3))))
+                    .background(Brush.linearGradient(listOf(GosColors.Blue, GosColors.BlueDark)))
             ) {
                 TopAppBar(
                     title = {
@@ -185,10 +186,10 @@ private fun DocPreviewCard(title: String) {
                 Icon(Icons.Default.Description, contentDescription = null, tint = BrandColor, modifier = Modifier.size(20.dp))
                 Text(title, fontWeight = FontWeight.SemiBold, fontSize = 13.sp)
             }
-            HorizontalDivider(color = Color(0xFFE5E7EB))
+            HorizontalDivider(color = GosColors.Divider)
             Spacer(Modifier.height(8.dp))
-            Text("📌 Тип: Юридическая жалоба", fontSize = 11.sp, color = Color(0xFF6B7280))
-            Text("⚖️ Основание: КоАП РФ / ГК РФ", fontSize = 11.sp, color = Color(0xFF6B7280))
+            Text("📌 Тип: Юридическая жалоба", fontSize = 11.sp, color = GosColors.TextSecond)
+            Text("⚖️ Основание: КоАП РФ / ГК РФ", fontSize = 11.sp, color = GosColors.TextSecond)
         }
     }
 }
@@ -200,7 +201,7 @@ private fun DocumentFieldRow(field: DocumentField, onChange: (String) -> Unit) {
             text          = field.label.uppercase(),
             fontSize      = 11.sp,
             fontWeight    = FontWeight.SemiBold,
-            color         = Color(0xFF6B7280),
+            color         = GosColors.TextSecond,
             letterSpacing = 0.5.sp
         )
         if (field.editable) {
@@ -222,15 +223,15 @@ private fun DocumentFieldRow(field: DocumentField, onChange: (String) -> Unit) {
         } else {
             Surface(
                 shape = RoundedCornerShape(8.dp),
-                color = Color(0xFFF9FAFB),
+                color = GosColors.Background,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .border(1.dp, Color(0xFFE5E7EB), RoundedCornerShape(8.dp))
+                    .border(1.dp, GosColors.Divider, RoundedCornerShape(8.dp))
             ) {
                 Text(
                     text     = field.value.ifBlank { "—" },
                     fontSize = 13.sp,
-                    color    = Color(0xFF111827),
+                    color    = GosColors.TextPrimary,
                     modifier = Modifier.padding(horizontal = 12.dp, vertical = 10.dp)
                 )
             }
@@ -245,7 +246,7 @@ private fun BodyTextEditor(text: String, onChange: (String) -> Unit) {
             text          = "СУТЬ ЖАЛОБЫ",
             fontSize      = 11.sp,
             fontWeight    = FontWeight.SemiBold,
-            color         = Color(0xFF6B7280),
+            color         = GosColors.TextSecond,
             letterSpacing = 0.5.sp
         )
         OutlinedTextField(
@@ -265,9 +266,9 @@ private fun PrivacyNote() {
         horizontalArrangement = Arrangement.Center,
         verticalAlignment     = Alignment.CenterVertically
     ) {
-        Icon(Icons.Default.Lock, contentDescription = null, modifier = Modifier.size(13.dp), tint = Color(0xFF9CA3AF))
+        Icon(Icons.Default.Lock, contentDescription = null, modifier = Modifier.size(13.dp), tint = GosColors.TextSecond)
         Spacer(Modifier.width(4.dp))
-        Text("Данные хранятся только на вашем устройстве", fontSize = 11.sp, color = Color(0xFF9CA3AF))
+        Text("Данные хранятся только на вашем устройстве", fontSize = 11.sp, color = GosColors.TextSecond)
     }
 }
 

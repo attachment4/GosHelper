@@ -16,14 +16,15 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.gospomoshnik.ui.theme.GosColors
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
-private val BrandColor = Color(0xFF4338CA)
-private val BrandLight = Color(0xFFEEF2FF)
-private val GoldLight  = Color(0xFFFEF3C7)
-private val GoldColor  = Color(0xFFB45309)
+private val BrandColor = GosColors.Blue
+private val BrandLight = GosColors.BlueLight
+private val GoldLight  = GosColors.AmberLight
+private val GoldColor  = GosColors.Amber
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -115,7 +116,7 @@ fun ProfileScreen(
             Text(
                 text     = "Лимит обновляется в начале каждого месяца.\nИстория чатов хранится только на устройстве.",
                 fontSize = 12.sp,
-                color    = Color(0xFF9CA3AF),
+                color    = GosColors.TextSecond,
                 lineHeight = 18.sp
             )
         }

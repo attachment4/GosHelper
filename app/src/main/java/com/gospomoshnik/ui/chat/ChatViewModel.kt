@@ -9,6 +9,7 @@ import com.gospomoshnik.domain.repository.ChatRepository
 import com.gospomoshnik.domain.usecase.CheckSubscriptionUseCase
 import com.gospomoshnik.domain.usecase.SendMessageUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -37,26 +38,22 @@ class ChatViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(ChatUiState())
     val uiState: StateFlow<ChatUiState> = _uiState.asStateFlow()
 
-    private var sessionId: Long = 0L
+    // 0 — новая сессия; создаётся в БД лениво, при первом отправленном
+    // сообщении, чтобы не плодить пустые "Новые диалоги"
+    private var sessionId: Long = savedStateHandle["sessionId"] ?: 0L
+    private var messagesJob: Job? = null
 
     init {
-        initSession()
+        if (sessionId > 0L) observeMessages()
         observeSubscription()
     }
 
-    private fun initSession() {
-        viewModelScope.launch {
-            val session = ChatSession(
-                category = category,
-                title    = "Новый диалог"
-            )
-            sessionId = chatRepository.createSession(session)
-            _uiState.update { it.copy(sessionId = sessionId) }
-
-            chatRepository.getMessages(sessionId)
-                .collect { messages ->
-                    _uiState.update { it.copy(messages = messages) }
-                }
+    private fun observeMessages() {
+        messagesJob?.cancel()
+        messagesJob = viewModelScope.launch {
+            chatRepository.getMessages(sessionId).collect { messages ->
+                _uiState.update { it.copy(messages = messages, sessionId = sessionId) }
+            }
         }
     }
 
@@ -87,15 +84,21 @@ class ChatViewModel @Inject constructor(
 
             _uiState.update { it.copy(inputText = "", isLoading = true, error = null) }
 
+            if (sessionId == 0L) {
+                sessionId = chatRepository.createSession(
+                    ChatSession(category = category, title = sessionTitle(text))
+                )
+                observeMessages()
+            }
+
             val userMsg = ChatMessage(sessionId = sessionId, role = "user", content = text)
             chatRepository.insertMessage(userMsg)
-            updateSessionTitle(text)
 
             val history = _uiState.value.messages + userMsg
 
             sendMessage(history, category)
                 .catch { e ->
-                    _uiState.update { it.copy(isLoading = false, error = e.message) }
+                    _uiState.update { it.copy(isLoading = false, error = humanError(e)) }
                 }
                 .collect { reply ->
                     val assistantMsg = ChatMessage(
@@ -121,14 +124,14 @@ class ChatViewModel @Inject constructor(
         _uiState.update { it.copy(error = null) }
     }
 
-    private suspend fun updateSessionTitle(firstMessage: String) {
-        if (_uiState.value.messages.size > 1) return
-        val title = firstMessage.take(60).let { if (firstMessage.length > 60) "$it…" else it }
-        val updated = ChatSession(
-            id       = sessionId,
-            category = category,
-            title    = title
-        )
-        chatRepository.createSession(updated)
+    private fun sessionTitle(firstMessage: String) =
+        firstMessage.take(60).let { if (firstMessage.length > 60) "$it…" else it }
+
+    private fun humanError(e: Throwable): String = when {
+        e is java.net.UnknownHostException     -> "Нет подключения к интернету"
+        e is java.net.SocketTimeoutException   -> "Сервер не отвечает, попробуйте ещё раз"
+        e is javax.net.ssl.SSLException        -> "Ошибка защищённого соединения"
+        e.message?.contains("401") == true     -> "Ошибка авторизации GigaChat — проверьте ключ"
+        else                                   -> e.message ?: "Неизвестная ошибка"
     }
 }
