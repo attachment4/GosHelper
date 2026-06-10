@@ -77,7 +77,7 @@ fun MainScreen(
                     SectionTitle("Недавние вопросы", modifier = Modifier.padding(horizontal = 16.dp))
                     Spacer(Modifier.height(10.dp))
                 }
-                items(uiState.recentSessions.take(5)) { session ->
+                items(uiState.recentSessions.take(5), key = { it.id }) { session ->
                     RecentSessionItem(
                         session = session,
                         onClick = { onHistoryItemClick(session.category, session.id) }

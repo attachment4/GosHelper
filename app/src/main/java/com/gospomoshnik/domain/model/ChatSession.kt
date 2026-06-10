@@ -1,9 +1,12 @@
 package com.gospomoshnik.domain.model
 
+import androidx.compose.runtime.Immutable
+
 /**
  * Доменная модель сессии чата.
  * Не зависит от Android / Room / Retrofit — чистый Kotlin.
  */
+@Immutable
 data class ChatSession(
     val id: Long = 0,
     val category: String,       // "gibdd" | "zhkh" | "labor" | "benefits" | "court" | "documents"

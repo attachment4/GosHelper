@@ -9,6 +9,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.Send
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -55,13 +56,19 @@ fun ChatScreen(
         }
     }
 
+    // Документ можно создать, когда ИИ уже что-то ответил в сохранённой сессии
+    val canGenerateDoc = uiState.sessionId > 0L &&
+        uiState.messages.any { it.role == "assistant" }
+
     Scaffold(
         topBar = {
             ChatTopBar(
-                category     = category,
-                requestsLeft = uiState.requestsLeft,
-                isPro        = uiState.isPro,
-                onBack       = onBack
+                category        = category,
+                requestsLeft    = uiState.requestsLeft,
+                isPro           = uiState.isPro,
+                canGenerateDoc  = canGenerateDoc,
+                onGenerateDoc   = { onGenerateDocument(uiState.sessionId) },
+                onBack          = onBack
             )
         },
         bottomBar = {
@@ -83,7 +90,7 @@ fun ChatScreen(
                     contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    items(uiState.messages) { msg ->
+                    items(uiState.messages, key = { it.id }) { msg ->
                         MessageBubble(msg = msg)
                     }
                     if (uiState.isLoading) {
@@ -105,6 +112,8 @@ private fun ChatTopBar(
     category: String,
     requestsLeft: Int,
     isPro: Boolean,
+    canGenerateDoc: Boolean,
+    onGenerateDoc: () -> Unit,
     onBack: () -> Unit
 ) {
     Box(
@@ -136,6 +145,15 @@ private fun ChatTopBar(
                 }
             },
             actions = {
+                if (canGenerateDoc) {
+                    IconButton(onClick = onGenerateDoc) {
+                        Icon(
+                            Icons.Default.Description,
+                            contentDescription = "Создать документ",
+                            tint = Color.White
+                        )
+                    }
+                }
                 Surface(
                     shape    = RoundedCornerShape(20.dp),
                     color    = Color.White.copy(alpha = 0.15f),
@@ -176,15 +194,24 @@ private fun MessageBubble(msg: ChatMessage) {
             ),
             color           = if (isUser) BrandColor else Color.White,
             shadowElevation = 1.dp,
-            modifier        = Modifier.widthIn(max = 280.dp)
+            modifier        = Modifier.widthIn(max = 290.dp)
         ) {
-            Text(
-                text       = msg.content,
-                color      = if (isUser) Color.White else GosColors.TextPrimary,
-                fontSize   = 13.sp,
-                lineHeight = 20.sp,
-                modifier   = Modifier.padding(horizontal = 13.dp, vertical = 10.dp)
-            )
+            if (isUser) {
+                Text(
+                    text       = msg.content,
+                    color      = Color.White,
+                    fontSize   = 13.sp,
+                    lineHeight = 20.sp,
+                    modifier   = Modifier.padding(horizontal = 13.dp, vertical = 10.dp)
+                )
+            } else {
+                // Ответ ИИ приходит в Markdown — рендерим со списками и ссылками
+                MarkdownText(
+                    markdown = msg.content,
+                    color    = GosColors.TextPrimary,
+                    modifier = Modifier.padding(horizontal = 13.dp, vertical = 10.dp)
+                )
+            }
         }
         if (isUser) Spacer(Modifier.width(8.dp))
     }

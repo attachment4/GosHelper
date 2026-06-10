@@ -32,7 +32,8 @@ android {
 
     buildTypes {
         release {
-            isMinifyEnabled = true
+            isMinifyEnabled    = true
+            isShrinkResources  = true   // выкинуть неиспользуемые ресурсы из APK
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"

@@ -18,8 +18,9 @@ interface GigaChatApi {
 data class GigaChatRequest(
     val model: String = "GigaChat",
     val messages: List<GigaChatMessage>,
-    val temperature: Double = 0.7,
-    val max_tokens: Int = 1024,
+    // Низкая температура — меньше «фантазий», важно для точности статей и сумм
+    val temperature: Double = 0.3,
+    val max_tokens: Int = 1536,
     val stream: Boolean = false
 )
 
