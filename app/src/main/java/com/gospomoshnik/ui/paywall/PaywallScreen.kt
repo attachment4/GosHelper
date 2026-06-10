@@ -22,6 +22,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
+import com.gospomoshnik.domain.model.PlanType
 import com.gospomoshnik.ui.theme.GosColors
 
 private val DarkBrand  = GosColors.BlueDark
@@ -34,8 +36,20 @@ private val GoldLight  = GosColors.AmberLight
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun PaywallScreen(onClose: () -> Unit) {
-    var selectedPlan by remember { mutableStateOf("year") }
+fun PaywallScreen(
+    onClose: () -> Unit,
+    viewModel: PaywallViewModel = hiltViewModel()
+) {
+    val uiState by viewModel.uiState.collectAsState()
+    val processing = uiState.payment is PaymentState.Processing
+
+    // Успешная оплата — короткая пауза и закрытие (Pro уже активирован)
+    LaunchedEffect(uiState.payment) {
+        if (uiState.payment is PaymentState.Success) {
+            kotlinx.coroutines.delay(1400)
+            onClose()
+        }
+    }
 
     Column(
         modifier = Modifier
@@ -43,10 +57,8 @@ fun PaywallScreen(onClose: () -> Unit) {
             .background(GosColors.Background)
             .verticalScroll(rememberScrollState())
     ) {
-        // Hero-секция
         HeroSection(onClose = onClose)
 
-        // Контент
         Column(
             modifier = Modifier.padding(20.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
@@ -54,23 +66,41 @@ fun PaywallScreen(onClose: () -> Unit) {
             FeaturesList()
 
             PlansRow(
-                selected = selectedPlan,
-                onSelect = { selectedPlan = it }
+                selected = uiState.selectedPlan,
+                onSelect = viewModel::selectPlan
             )
 
             Button(
-                onClick  = { /* TODO: ЮKassa SDK */ },
+                onClick  = viewModel::pay,
+                enabled  = !processing,
                 modifier = Modifier.fillMaxWidth().height(52.dp),
                 shape    = RoundedCornerShape(16.dp),
                 colors   = ButtonDefaults.buttonColors(containerColor = BrandColor),
                 elevation = ButtonDefaults.buttonElevation(defaultElevation = 4.dp)
             ) {
-                Text(
-                    text       = if (selectedPlan == "year") "Оформить на год — 990 ₽"
-                                 else "Оформить на месяц — 199 ₽",
-                    fontSize   = 15.sp,
-                    fontWeight = FontWeight.Bold
-                )
+                when (uiState.payment) {
+                    is PaymentState.Processing -> CircularProgressIndicator(
+                        color = Color.White, strokeWidth = 2.dp, modifier = Modifier.height(22.dp)
+                    )
+                    is PaymentState.Success -> Text("Подписка оформлена ✓", fontSize = 15.sp, fontWeight = FontWeight.Bold)
+                    else -> Text(uiState.selectedPlan.ctaText, fontSize = 15.sp, fontWeight = FontWeight.Bold)
+                }
+            }
+
+            (uiState.payment as? PaymentState.Error)?.let { err ->
+                Surface(
+                    shape    = RoundedCornerShape(10.dp),
+                    color    = GosColors.RedLight,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Row(
+                        modifier = Modifier.padding(12.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(err.message, color = GosColors.Red, fontSize = 12.sp, modifier = Modifier.weight(1f))
+                        TextButton(onClick = viewModel::dismissError) { Text("OK", fontSize = 12.sp) }
+                    }
+                }
             }
 
             PaymentBadges()
@@ -182,32 +212,30 @@ private fun FeaturesList() {
 }
 
 @Composable
-private fun PlansRow(selected: String, onSelect: (String) -> Unit) {
+private fun PlansRow(selected: PlanType, onSelect: (PlanType) -> Unit) {
     Row(
         modifier              = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(10.dp)
     ) {
-        // Месяц
         PlanCard(
             period   = "Месяц",
             price    = "199",
             perMonth = "/месяц",
             saving   = null,
             badge    = null,
-            selected = selected == "month",
+            selected = selected == PlanType.MONTHLY,
             modifier = Modifier.weight(1f),
-            onClick  = { onSelect("month") }
+            onClick  = { onSelect(PlanType.MONTHLY) }
         )
-        // Год
         PlanCard(
             period   = "Год",
             price    = "990",
             perMonth = "83 ₽/мес",
             saving   = "Экономия 1 398 ₽",
             badge    = "Выгоднее на 58%",
-            selected = selected == "year",
+            selected = selected == PlanType.YEARLY,
             modifier = Modifier.weight(1f),
-            onClick  = { onSelect("year") }
+            onClick  = { onSelect(PlanType.YEARLY) }
         )
     }
 }

@@ -1,5 +1,6 @@
-# ── GigaChat DTO: Gson сериализует по рефлексии — не переименовывать поля ──
+# ── DTO для Gson: сериализуются по рефлексии — не переименовывать поля ──
 -keep class com.gospomoshnik.data.remote.** { *; }
+-keep class com.gospomoshnik.data.payment.** { *; }
 -keepattributes Signature
 -keepattributes *Annotation*
 

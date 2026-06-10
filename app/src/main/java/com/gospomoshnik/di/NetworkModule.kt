@@ -66,4 +66,14 @@ object NetworkModule {
     @Provides
     @Named("gigachat_auth")
     fun provideGigaChatAuth(): String = BuildConfig.GIGACHAT_AUTH
+
+    @Provides
+    @Singleton
+    fun providePaymentApi(client: OkHttpClient): com.gospomoshnik.data.payment.PaymentApi =
+        Retrofit.Builder()
+            .baseUrl(BuildConfig.PAYMENTS_BASE_URL)
+            .client(client)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+            .create(com.gospomoshnik.data.payment.PaymentApi::class.java)
 }

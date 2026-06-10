@@ -23,6 +23,17 @@ android {
         val gigaChatAuth = project.findProperty("GIGACHAT_AUTH")?.toString() ?: ""
         buildConfigField("String", "GIGACHAT_AUTH", "\"$gigaChatAuth\"")
 
+        // ── Платежи (ЮKassa) ──────────────────────────────────────────────
+        // Публикуемый ключ магазина и shopId — безопасны для APK.
+        // Секретный ключ живёт ТОЛЬКО на бэкенде.
+        val yooShopId = project.findProperty("YOOKASSA_SHOP_ID")?.toString() ?: ""
+        val yooKey    = project.findProperty("YOOKASSA_KEY")?.toString() ?: ""
+        val payBaseUrl = project.findProperty("PAYMENTS_BASE_URL")?.toString()
+            ?: "https://example.invalid/api/"   // заменить на адрес бэкенда
+        buildConfigField("String", "YOOKASSA_SHOP_ID", "\"$yooShopId\"")
+        buildConfigField("String", "YOOKASSA_KEY",     "\"$yooKey\"")
+        buildConfigField("String", "PAYMENTS_BASE_URL", "\"$payBaseUrl\"")
+
         // Room: экспорт схемы для миграций
         ksp {
             arg("room.schemaLocation", "$projectDir/schemas")
@@ -38,10 +49,14 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            // Прод: только реальная оплата через бэкенд, без симуляции
+            buildConfigField("boolean", "PAYMENTS_SIMULATE", "false")
         }
         debug {
             isDebuggable    = true
             isMinifyEnabled = false
+            // Dev: симулировать успешную оплату, чтобы прокликать сценарий без бэкенда
+            buildConfigField("boolean", "PAYMENTS_SIMULATE", "true")
         }
     }
 
