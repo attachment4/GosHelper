@@ -1,24 +1,39 @@
 package com.gospomoshnik.ui.profile
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
-/**
- * Экран профиля: статус подписки, кнопка Upgrade, выход.
- * TODO Фаза 5: показ реального статуса из SubscriptionRepository.
- */
+private val BrandColor = Color(0xFF4338CA)
+private val BrandLight = Color(0xFFEEF2FF)
+private val GoldLight  = Color(0xFFFEF3C7)
+private val GoldColor  = Color(0xFFB45309)
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProfileScreen(
     onUpgradeClick: () -> Unit,
-    onBack: () -> Unit
+    onBack: () -> Unit,
+    viewModel: ProfileViewModel = hiltViewModel()
 ) {
+    val subscription by viewModel.subscription.collectAsState()
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -32,15 +47,77 @@ fun ProfileScreen(
         }
     ) { padding ->
         Column(
-            modifier         = Modifier.fillMaxSize().padding(padding).padding(24.dp),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding)
+                .padding(20.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            Text("Бесплатный план — 10 запросов/мес")
-            Spacer(Modifier.height(16.dp))
-            Button(onClick = onUpgradeClick) {
-                Text("Перейти на Pro")
+            // Карточка тарифа
+            Surface(
+                shape = RoundedCornerShape(16.dp),
+                color = if (subscription.isPro) GoldLight else BrandLight,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Column(modifier = Modifier.padding(20.dp)) {
+                    Text(
+                        text       = if (subscription.isPro) "👑 ГосПомощник Pro" else "Бесплатный план",
+                        fontSize   = 16.sp,
+                        fontWeight = FontWeight.Bold,
+                        color      = if (subscription.isPro) GoldColor else BrandColor
+                    )
+                    Spacer(Modifier.height(8.dp))
+                    if (subscription.isPro) {
+                        Text(
+                            text     = "Безлимитные запросы",
+                            fontSize = 13.sp,
+                            color    = GoldColor.copy(alpha = 0.8f)
+                        )
+                        subscription.expiresAt?.let { ts ->
+                            val date = SimpleDateFormat("d MMMM yyyy", Locale("ru")).format(Date(ts))
+                            Text(
+                                text     = "Действует до $date",
+                                fontSize = 12.sp,
+                                color    = GoldColor.copy(alpha = 0.7f)
+                            )
+                        }
+                    } else {
+                        Text(
+                            text     = "Осталось ${subscription.requestsLeft} из ${subscription.requestsLimit} запросов в этом месяце",
+                            fontSize = 13.sp,
+                            color    = BrandColor.copy(alpha = 0.8f)
+                        )
+                        Spacer(Modifier.height(12.dp))
+                        // Прогресс-бар лимита
+                        LinearProgressIndicator(
+                            progress = {
+                                subscription.requestsLeft.toFloat() / subscription.requestsLimit
+                            },
+                            modifier   = Modifier.fillMaxWidth().height(8.dp),
+                            color      = BrandColor,
+                            trackColor = Color.White
+                        )
+                    }
+                }
             }
+
+            if (!subscription.isPro) {
+                Button(
+                    onClick  = onUpgradeClick,
+                    modifier = Modifier.fillMaxWidth().height(50.dp),
+                    shape    = RoundedCornerShape(14.dp),
+                    colors   = ButtonDefaults.buttonColors(containerColor = BrandColor)
+                ) {
+                    Text("Перейти на Pro — от 83 ₽/мес", fontWeight = FontWeight.SemiBold)
+                }
+            }
+
+            Text(
+                text     = "Лимит обновляется в начале каждого месяца.\nИстория чатов хранится только на устройстве.",
+                fontSize = 12.sp,
+                color    = Color(0xFF9CA3AF),
+                lineHeight = 18.sp
+            )
         }
     }
 }

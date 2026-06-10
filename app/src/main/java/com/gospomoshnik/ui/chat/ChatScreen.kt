@@ -56,7 +56,12 @@ fun ChatScreen(
 
     Scaffold(
         topBar = {
-            ChatTopBar(category = category, onBack = onBack)
+            ChatTopBar(
+                category     = category,
+                requestsLeft = uiState.requestsLeft,
+                isPro        = uiState.isPro,
+                onBack       = onBack
+            )
         },
         bottomBar = {
             ChatInputBar(
@@ -95,7 +100,12 @@ fun ChatScreen(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun ChatTopBar(category: String, onBack: () -> Unit) {
+private fun ChatTopBar(
+    category: String,
+    requestsLeft: Int,
+    isPro: Boolean,
+    onBack: () -> Unit
+) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -122,6 +132,21 @@ private fun ChatTopBar(category: String, onBack: () -> Unit) {
             navigationIcon = {
                 IconButton(onClick = onBack) {
                     Icon(Icons.Default.ArrowBack, contentDescription = "Назад", tint = Color.White)
+                }
+            },
+            actions = {
+                Surface(
+                    shape    = RoundedCornerShape(20.dp),
+                    color    = Color.White.copy(alpha = 0.15f),
+                    modifier = Modifier.padding(end = 12.dp)
+                ) {
+                    Text(
+                        text       = if (isPro) "PRO" else "$requestsLeft / 10",
+                        color      = Color.White,
+                        fontSize   = 11.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        modifier   = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
+                    )
                 }
             },
             colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent)

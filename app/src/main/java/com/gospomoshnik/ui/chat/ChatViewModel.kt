@@ -19,7 +19,9 @@ data class ChatUiState(
     val isLoading: Boolean = false,
     val error: String? = null,
     val showPaywall: Boolean = false,
-    val sessionId: Long = 0L
+    val sessionId: Long = 0L,
+    val requestsLeft: Int = 10,
+    val isPro: Boolean = false
 )
 
 @HiltViewModel
@@ -39,6 +41,7 @@ class ChatViewModel @Inject constructor(
 
     init {
         initSession()
+        observeSubscription()
     }
 
     private fun initSession() {
@@ -54,6 +57,16 @@ class ChatViewModel @Inject constructor(
                 .collect { messages ->
                     _uiState.update { it.copy(messages = messages) }
                 }
+        }
+    }
+
+    private fun observeSubscription() {
+        viewModelScope.launch {
+            checkSubscription.observe().collect { sub ->
+                _uiState.update {
+                    it.copy(requestsLeft = sub.requestsLeft, isPro = sub.isPro)
+                }
+            }
         }
     }
 
@@ -92,6 +105,9 @@ class ChatViewModel @Inject constructor(
                     )
                     chatRepository.insertMessage(assistantMsg)
                     chatRepository.touchSession(sessionId)
+                    // Списать запрос только после успешного ответа —
+                    // ошибки сети не тратят лимит
+                    checkSubscription.consumeRequest()
                     _uiState.update { it.copy(isLoading = false) }
                 }
         }
