@@ -46,4 +46,21 @@ object DocRetriever {
 
         return results.take(limit).map { it.doc }
     }
+
+    /** Поиск для пользователя (строка поиска в разделе «Документы»):
+     *  показывает все документы, где встречаются все слова запроса. */
+    fun filter(query: String): List<LibraryDoc> {
+        val ql = query.trim().lowercase()
+        if (ql.length < 2) return emptyList()
+        val words = ql.split(Regex("\\s+")).filter { it.isNotBlank() }
+        return docsCatalog.flatMap { it.docs }.filter { doc ->
+            val hay = "${doc.title} ${doc.subtitle} ${doc.question} ${doc.subcategory}".lowercase()
+            words.all { hay.contains(it) }
+        }
+    }
+
+    private val categoryTitleById: Map<String, String> =
+        docsCatalog.flatMap { c -> c.docs.map { it.id to c.title } }.toMap()
+
+    fun categoryTitleOf(id: String): String = categoryTitleById[id] ?: ""
 }
