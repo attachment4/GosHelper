@@ -65,7 +65,7 @@ fun DocViewerScreen(
 
             // Перейти в чат с готовым вопросом по теме документа
             val category = categoryForDoc(docId)
-            val question = doc?.let { "Подскажите подробнее по теме: «${it.title}». ${it.subtitle}." } ?: ""
+            val question = doc?.question ?: ""
             Button(
                 onClick  = { onAskInChat(category, question) },
                 modifier = Modifier.fillMaxWidth().height(50.dp),
