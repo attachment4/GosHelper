@@ -5,7 +5,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -15,6 +14,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
@@ -25,6 +25,7 @@ import com.gospomoshnik.domain.model.ChatSession
 import com.gospomoshnik.domain.model.FREE_DAILY_LIMIT
 import com.gospomoshnik.ui.theme.GosColors
 import java.text.SimpleDateFormat
+import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 
@@ -38,12 +39,12 @@ private data class Category(
 )
 
 private val categories = listOf(
-    Category("gibdd",     "ГИБДД",     "Штрафы, лишение прав",  Icons.Default.DirectionsCar, GosColors.Blue,  GosColors.BlueLight),
-    Category("zhkh",      "ЖКХ",       "УК, квитанции, нормы",  Icons.Default.Home,          GosColors.Green, GosColors.GreenLight),
-    Category("labor",     "Трудовые",  "Права, увольнение",     Icons.Default.Work,          GosColors.Amber, GosColors.AmberLight),
-    Category("benefits",  "Льготы",    "Субсидии, пособия",     Icons.Default.Favorite,      GosColors.Red,   GosColors.RedLight),
-    Category("court",     "Суд",       "Иски, обжалование",     Icons.Default.Balance,       GosColors.Blue,  GosColors.BlueLight),
-    Category("documents", "Документы", "Шаблоны заявлений",     Icons.Default.Description,   GosColors.Green, GosColors.GreenLight)
+    Category("gibdd",     "ГИБДД",     "Штрафы, права",      Icons.Default.DirectionsCar, GosColors.Blue,  GosColors.BlueLight),
+    Category("zhkh",      "ЖКХ",       "УК, квитанции",      Icons.Default.Home,          GosColors.Green, GosColors.GreenLight),
+    Category("labor",     "Трудовые",  "Права, увольнение",  Icons.Default.Work,          GosColors.Amber, GosColors.AmberLight),
+    Category("benefits",  "Льготы",    "Субсидии, пособия",  Icons.Default.Favorite,      GosColors.Red,   GosColors.RedLight),
+    Category("court",     "Суд",       "Иски, обжалование",  Icons.Default.Balance,       GosColors.Blue,  GosColors.BlueLight),
+    Category("documents", "Документы", "Шаблоны заявлений",  Icons.Default.Description,   GosColors.Green, GosColors.GreenLight)
 )
 
 @Composable
@@ -65,20 +66,23 @@ fun MainScreen(
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(padding)
+                .padding(padding),
+            contentPadding = PaddingValues(bottom = 20.dp)
         ) {
-            item { HeaderSection(requestsLeft = uiState.requestsLeft, isPro = uiState.isPro) }
-            item { Spacer(Modifier.height(20.dp)) }
-            item {
-                SectionTitle("Категории", modifier = Modifier.padding(horizontal = 16.dp))
-                Spacer(Modifier.height(10.dp))
-            }
+            item { GreetingBar(onProfileClick = onProfileClick) }
+            item { Spacer(Modifier.height(12.dp)) }
+            item { SearchPill(onClick = { onCategoryClick("general") }) }
+            item { Spacer(Modifier.height(14.dp)) }
+            item { StatusHeroCard(requestsLeft = uiState.requestsLeft, isPro = uiState.isPro, onClick = onProfileClick) }
+            item { Spacer(Modifier.height(22.dp)) }
+            item { SectionHeader("Категории") }
+            item { Spacer(Modifier.height(12.dp)) }
             item { CategoryGrid(onCategoryClick = onCategoryClick) }
             if (uiState.recentSessions.isNotEmpty()) {
                 item {
-                    Spacer(Modifier.height(12.dp))
-                    SectionTitle("Недавние вопросы", modifier = Modifier.padding(horizontal = 16.dp))
-                    Spacer(Modifier.height(10.dp))
+                    Spacer(Modifier.height(22.dp))
+                    SectionHeader("Недавние вопросы")
+                    Spacer(Modifier.height(8.dp))
                 }
                 items(uiState.recentSessions.take(5), key = { it.id }) { session ->
                     RecentSessionItem(
@@ -87,76 +91,141 @@ fun MainScreen(
                     )
                 }
             }
-            item { Spacer(Modifier.height(16.dp)) }
         }
     }
 }
 
-// ── Шапка в стилистике Госуслуг: белая, синий логотип ────────────────────────
+// ── Приветствие + аватар (как верх Сбера) ────────────────────────────────────
 
 @Composable
-private fun HeaderSection(requestsLeft: Int, isPro: Boolean) {
-    Surface(color = MaterialTheme.colorScheme.surface, shadowElevation = 1.dp) {
-        Column(
+private fun GreetingBar(onProfileClick: () -> Unit) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .statusBarsPadding()
+            .padding(start = 20.dp, end = 16.dp, top = 14.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text     = greetingByTime(),
+                fontSize = 14.sp,
+                color    = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Text(
+                text       = "ГосПомощник",
+                fontSize   = 22.sp,
+                fontWeight = FontWeight.Bold,
+                color      = MaterialTheme.colorScheme.onSurface,
+                letterSpacing = (-0.5).sp
+            )
+        }
+        Box(
+            modifier = Modifier
+                .size(42.dp)
+                .clip(CircleShape)
+                .background(GosColors.BlueLight)
+                .clickable(onClick = onProfileClick),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(Icons.Default.Person, contentDescription = "Профиль", tint = GosColors.Blue)
+        }
+    }
+}
+
+// ── Поисковая «пилюля» (открывает чат) ───────────────────────────────────────
+
+@Composable
+private fun SearchPill(onClick: () -> Unit) {
+    Surface(
+        shape    = RoundedCornerShape(28.dp),
+        color    = MaterialTheme.colorScheme.surface,
+        shadowElevation = 2.dp,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp)
+            .clickable(onClick = onClick)
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = 18.dp, vertical = 15.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Icon(Icons.Default.Search, contentDescription = null, tint = GosColors.Blue)
+            Text(
+                "Задайте вопрос юристу-ИИ…",
+                fontSize = 15.sp,
+                color    = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+    }
+}
+
+// ── Карта-герой со статусом (как баланс-карта Сбера) ─────────────────────────
+
+@Composable
+private fun StatusHeroCard(requestsLeft: Int, isPro: Boolean, onClick: () -> Unit) {
+    Surface(
+        shape    = RoundedCornerShape(24.dp),
+        color    = Color.Transparent,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp)
+            .clickable(onClick = onClick)
+    ) {
+        Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .statusBarsPadding()
-                .padding(horizontal = 20.dp, vertical = 20.dp)
-        ) {
-            Row(
-                modifier              = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment     = Alignment.CenterVertically
-            ) {
-                Text(
-                    text          = "госпомощник",
-                    color         = GosColors.Blue,
-                    fontWeight    = FontWeight.Bold,
-                    fontSize      = 18.sp,
-                    letterSpacing = (-0.3).sp
+                .background(
+                    Brush.linearGradient(listOf(GosColors.Blue, GosColors.BlueDark)),
+                    shape = RoundedCornerShape(24.dp)
                 )
-                Surface(
-                    shape = RoundedCornerShape(20.dp),
-                    color = GosColors.BlueLight
-                ) {
-                    Text(
-                        text       = if (isPro) "PRO · безлимит" else "$requestsLeft / $FREE_DAILY_LIMIT сегодня",
-                        color      = GosColors.Blue,
-                        fontSize   = 11.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        modifier   = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
-                    )
+                .padding(20.dp)
+        ) {
+            Column {
+                Text(
+                    text  = if (isPro) "Подписка Pro" else "Бесплатный доступ",
+                    color = Color.White.copy(alpha = 0.8f),
+                    fontSize = 13.sp
+                )
+                Spacer(Modifier.height(6.dp))
+                Text(
+                    text       = if (isPro) "Безлимитные вопросы" else "Осталось $requestsLeft из $FREE_DAILY_LIMIT на сегодня",
+                    color      = Color.White,
+                    fontSize   = 20.sp,
+                    fontWeight = FontWeight.Bold
+                )
+                Spacer(Modifier.height(14.dp))
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Surface(shape = RoundedCornerShape(20.dp), color = Color.White.copy(alpha = 0.18f)) {
+                        Text(
+                            text     = if (isPro) "Управлять подпиской" else "Подключить Pro — от 67 ₽/мес",
+                            color    = Color.White,
+                            fontSize = 13.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp)
+                        )
+                    }
+                    Spacer(Modifier.weight(1f))
+                    Icon(Icons.Default.ChevronRight, contentDescription = null, tint = Color.White)
                 }
             }
-            Spacer(Modifier.height(16.dp))
-            Text(
-                text       = "Чем могу помочь?",
-                color      = MaterialTheme.colorScheme.onSurface,
-                fontSize   = 22.sp,
-                fontWeight = FontWeight.Bold
-            )
-            Text(
-                text     = "ИИ-консультант по законодательству РФ",
-                color    = MaterialTheme.colorScheme.onSurfaceVariant,
-                fontSize = 13.sp,
-                modifier = Modifier.padding(top = 4.dp)
-            )
         }
     }
 }
 
 @Composable
-private fun SectionTitle(text: String, modifier: Modifier = Modifier) {
+private fun SectionHeader(text: String) {
     Text(
         text       = text,
-        fontSize   = 15.sp,
-        fontWeight = FontWeight.SemiBold,
+        fontSize   = 18.sp,
+        fontWeight = FontWeight.Bold,
         color      = MaterialTheme.colorScheme.onSurface,
-        modifier   = modifier
+        modifier   = Modifier.padding(horizontal = 18.dp)
     )
 }
 
-// ── Категории: белые карточки с цветными иконками (как сервисы Госуслуг) ────
+// ── Плитки категорий (круглые подложки иконок) ───────────────────────────────
 
 @Composable
 private fun CategoryGrid(onCategoryClick: (String) -> Unit) {
@@ -164,7 +233,7 @@ private fun CategoryGrid(onCategoryClick: (String) -> Unit) {
         categories.chunked(2).forEach { row ->
             Row(
                 modifier              = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(10.dp)
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 row.forEach { cat ->
                     CategoryCard(
@@ -175,7 +244,7 @@ private fun CategoryGrid(onCategoryClick: (String) -> Unit) {
                 }
                 if (row.size == 1) Spacer(Modifier.weight(1f))
             }
-            Spacer(Modifier.height(10.dp))
+            Spacer(Modifier.height(12.dp))
         }
     }
 }
@@ -188,15 +257,15 @@ private fun CategoryCard(
 ) {
     Surface(
         modifier        = modifier.clickable(onClick = onClick),
-        shape           = RoundedCornerShape(14.dp),
+        shape           = RoundedCornerShape(20.dp),
         color           = MaterialTheme.colorScheme.surface,
-        shadowElevation = 1.dp
+        shadowElevation = 2.dp
     ) {
-        Column(modifier = Modifier.padding(14.dp)) {
+        Column(modifier = Modifier.padding(16.dp)) {
             Box(
                 modifier = Modifier
-                    .size(38.dp)
-                    .clip(RoundedCornerShape(10.dp))
+                    .size(48.dp)
+                    .clip(CircleShape)
                     .background(category.tintBg),
                 contentAlignment = Alignment.Center
             ) {
@@ -204,19 +273,19 @@ private fun CategoryCard(
                     imageVector        = category.icon,
                     contentDescription = null,
                     tint               = category.tint,
-                    modifier           = Modifier.size(20.dp)
+                    modifier           = Modifier.size(24.dp)
                 )
             }
-            Spacer(Modifier.height(10.dp))
+            Spacer(Modifier.height(12.dp))
             Text(
                 text       = category.label,
                 fontWeight = FontWeight.SemiBold,
-                fontSize   = 14.sp,
+                fontSize   = 15.sp,
                 color      = MaterialTheme.colorScheme.onSurface
             )
             Text(
                 text     = category.subtitle,
-                fontSize = 11.sp,
+                fontSize = 12.sp,
                 color    = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
@@ -228,22 +297,22 @@ private fun CategoryCard(
 @Composable
 private fun RecentSessionItem(session: ChatSession, onClick: () -> Unit) {
     Surface(
-        shape           = RoundedCornerShape(12.dp),
+        shape           = RoundedCornerShape(18.dp),
         color           = MaterialTheme.colorScheme.surface,
-        shadowElevation = 1.dp,
+        shadowElevation = 2.dp,
         modifier        = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 4.dp)
+            .padding(horizontal = 16.dp, vertical = 5.dp)
             .clickable(onClick = onClick)
     ) {
         Row(
-            modifier          = Modifier.padding(12.dp),
+            modifier          = Modifier.padding(14.dp),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
+            horizontalArrangement = Arrangement.spacedBy(14.dp)
         ) {
             Box(
                 modifier = Modifier
-                    .size(36.dp)
+                    .size(42.dp)
                     .clip(CircleShape)
                     .background(GosColors.BlueLight),
                 contentAlignment = Alignment.Center
@@ -252,20 +321,20 @@ private fun RecentSessionItem(session: ChatSession, onClick: () -> Unit) {
                     Icons.Default.ChatBubbleOutline,
                     contentDescription = null,
                     tint     = GosColors.Blue,
-                    modifier = Modifier.size(18.dp)
+                    modifier = Modifier.size(20.dp)
                 )
             }
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text       = session.title,
                     fontWeight = FontWeight.Medium,
-                    fontSize   = 13.sp,
+                    fontSize   = 14.sp,
                     color      = MaterialTheme.colorScheme.onSurface,
                     maxLines   = 1
                 )
                 Text(
                     text     = formatDate(session.updatedAt),
-                    fontSize = 11.sp,
+                    fontSize = 12.sp,
                     color    = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
@@ -275,6 +344,16 @@ private fun RecentSessionItem(session: ChatSession, onClick: () -> Unit) {
                 tint = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
+    }
+}
+
+private fun greetingByTime(): String {
+    val h = Calendar.getInstance().get(Calendar.HOUR_OF_DAY)
+    return when (h) {
+        in 5..11  -> "Доброе утро"
+        in 12..17 -> "Добрый день"
+        in 18..22 -> "Добрый вечер"
+        else      -> "Доброй ночи"
     }
 }
 
@@ -289,7 +368,7 @@ private fun formatDate(timestamp: Long): String {
     }
 }
 
-// ── Нижняя навигация: только рабочие разделы ─────────────────────────────────
+// ── Нижняя навигация ─────────────────────────────────────────────────────────
 
 @Composable
 private fun BottomNavigationBar(onProfileClick: () -> Unit, onLibraryClick: () -> Unit) {
