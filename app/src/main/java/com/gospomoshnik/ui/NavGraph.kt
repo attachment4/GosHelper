@@ -25,9 +25,9 @@ import com.gospomoshnik.ui.settings.SettingsViewModel
 
 sealed class Screen(val route: String) {
     object Main     : Screen("main")
-    object Chat     : Screen("chat/{category}?sessionId={sessionId}&question={question}") {
-        fun createRoute(category: String, sessionId: Long = 0L, question: String = "") =
-            "chat/$category?sessionId=$sessionId&question=${android.net.Uri.encode(question)}"
+    object Chat     : Screen("chat/{category}?sessionId={sessionId}&question={question}&docId={docId}") {
+        fun createRoute(category: String, sessionId: Long = 0L, question: String = "", docId: String = "") =
+            "chat/$category?sessionId=$sessionId&question=${android.net.Uri.encode(question)}&docId=$docId"
     }
     object Document : Screen("document/{sessionId}") {
         fun createRoute(sessionId: Long) = "document/$sessionId"
@@ -104,7 +104,8 @@ fun NavGraph(
             arguments = listOf(
                 navArgument("category")  { type = NavType.StringType },
                 navArgument("sessionId") { type = NavType.LongType; defaultValue = 0L },
-                navArgument("question")  { type = NavType.StringType; defaultValue = "" }
+                navArgument("question")  { type = NavType.StringType; defaultValue = "" },
+                navArgument("docId")     { type = NavType.StringType; defaultValue = "" }
             )
         ) { backStack ->
             val category = backStack.arguments?.getString("category") ?: "general"
@@ -171,10 +172,11 @@ fun NavGraph(
             route     = Screen.DocView.route,
             arguments = listOf(navArgument("docId") { type = NavType.StringType })
         ) { backStack ->
+            val docId = backStack.arguments?.getString("docId") ?: ""
             DocViewerScreen(
-                docId       = backStack.arguments?.getString("docId") ?: "",
+                docId       = docId,
                 onAskInChat = { category, question ->
-                    navController.navigate(Screen.Chat.createRoute(category, question = question))
+                    navController.navigate(Screen.Chat.createRoute(category, question = question, docId = docId))
                 },
                 onBack      = { navController.popBackStack() }
             )

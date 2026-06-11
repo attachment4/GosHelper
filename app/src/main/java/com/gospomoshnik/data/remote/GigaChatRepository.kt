@@ -15,9 +15,19 @@ class GigaChatRepository @Inject constructor(
 ) {
     fun sendMessage(
         history: List<ChatMessage>,
-        category: String
+        category: String,
+        reference: String? = null
     ): Flow<String> = flow {
-        val system = prompts.systemPrompt(category)
+        val base = prompts.systemPrompt(category)
+        // Если пользователь пришёл из конкретного документа — даём ИИ его текст
+        // как ПРОВЕРЕННЫЙ источник и требуем опираться в первую очередь на него.
+        val system = if (!reference.isNullOrBlank()) {
+            base + "\n\n# Проверенный справочный материал по теме вопроса\n" +
+                "Опирайся В ПЕРВУЮ ОЧЕРЕДЬ на этот выверенный материал, не противоречь ему. " +
+                "Если в нём есть нужные статьи, сроки и нюансы — используй именно их.\n\n" +
+                reference
+        } else base
+
         val messages = buildList {
             add(GigaChatMessage("system", system))
             // Передаём последние сообщения для контекста (ограничиваем, чтобы

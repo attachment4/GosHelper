@@ -6,12 +6,16 @@ import androidx.lifecycle.viewModelScope
 import com.gospomoshnik.domain.model.ChatMessage
 import com.gospomoshnik.domain.model.ChatSession
 import com.gospomoshnik.domain.repository.ChatRepository
+import android.content.Context
 import com.gospomoshnik.domain.usecase.CheckSubscriptionUseCase
 import com.gospomoshnik.domain.usecase.SendMessageUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 data class ChatUiState(
@@ -30,13 +34,18 @@ class ChatViewModel @Inject constructor(
     private val chatRepository: ChatRepository,
     private val sendMessage: SendMessageUseCase,
     private val checkSubscription: CheckSubscriptionUseCase,
+    @ApplicationContext private val appContext: Context,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
     private val category: String = savedStateHandle["category"] ?: "general"
+    private val docId: String = savedStateHandle["docId"] ?: ""
 
     private val _uiState = MutableStateFlow(ChatUiState())
     val uiState: StateFlow<ChatUiState> = _uiState.asStateFlow()
+
+    // Текст выверенного документа (если пришли из библиотеки) — заземление ответов ИИ
+    private var reference: String? = null
 
     // 0 — новая сессия; создаётся в БД лениво, при первом отправленном
     // сообщении, чтобы не плодить пустые "Новые диалоги"
@@ -50,6 +59,16 @@ class ChatViewModel @Inject constructor(
         val prefill: String = savedStateHandle["question"] ?: ""
         if (prefill.isNotBlank()) {
             _uiState.update { it.copy(inputText = prefill) }
+        }
+        // Загружаем текст документа как проверенный источник для ИИ
+        if (docId.isNotBlank()) {
+            viewModelScope.launch {
+                reference = withContext(Dispatchers.IO) {
+                    runCatching {
+                        appContext.assets.open("docs/$docId.md").bufferedReader().use { it.readText() }
+                    }.getOrNull()
+                }
+            }
         }
     }
 
@@ -120,9 +139,21 @@ class ChatViewModel @Inject constructor(
         }
     }
 
+    /** Догружает текст документа, если пользователь отправил быстрее загрузки. */
+    private suspend fun ensureReference() {
+        if (docId.isNotBlank() && reference == null) {
+            reference = withContext(Dispatchers.IO) {
+                runCatching {
+                    appContext.assets.open("docs/$docId.md").bufferedReader().use { it.readText() }
+                }.getOrNull()
+            }
+        }
+    }
+
     /** Общий запрос ответа ИИ по истории сообщений. */
     private suspend fun requestReply(history: List<ChatMessage>) {
-        sendMessage(history, category)
+        ensureReference()
+        sendMessage(history, category, reference)
             .catch { e ->
                 _uiState.update { it.copy(isLoading = false, error = humanError(e)) }
             }

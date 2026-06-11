@@ -10,6 +10,7 @@ class SendMessageUseCase @Inject constructor(
 ) {
     operator fun invoke(
         history: List<ChatMessage>,
-        category: String
-    ): Flow<String> = gigaChat.sendMessage(history, category)
+        category: String,
+        reference: String? = null
+    ): Flow<String> = gigaChat.sendMessage(history, category, reference)
 }
