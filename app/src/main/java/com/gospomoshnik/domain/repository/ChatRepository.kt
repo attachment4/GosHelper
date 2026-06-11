@@ -28,6 +28,9 @@ interface ChatRepository {
     /** Сохранить одно сообщение. */
     suspend fun insertMessage(message: ChatMessage): Long
 
+    /** Удалить одно сообщение по id (откат при ошибке отправки). */
+    suspend fun deleteMessage(messageId: Long)
+
     /** Удалить сессию вместе со всеми её сообщениями. */
     suspend fun deleteSession(sessionId: Long)
 }

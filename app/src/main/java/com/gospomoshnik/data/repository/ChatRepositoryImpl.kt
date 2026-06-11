@@ -34,6 +34,9 @@ class ChatRepositoryImpl @Inject constructor(
     override suspend fun insertMessage(message: ChatMessage): Long =
         dao.insertMessage(message.toEntity())
 
+    override suspend fun deleteMessage(messageId: Long) =
+        dao.deleteMessage(messageId)
+
     override suspend fun deleteSession(sessionId: Long) =
         dao.deleteSession(sessionId)
 }
