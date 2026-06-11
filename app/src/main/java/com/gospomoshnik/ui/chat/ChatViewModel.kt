@@ -76,6 +76,11 @@ class ChatViewModel @Inject constructor(
         _uiState.update { it.copy(inputText = text) }
     }
 
+    /** Добавить распознанный голосом текст к полю ввода. */
+    fun appendInput(text: String) {
+        _uiState.update { it.copy(inputText = (it.inputText.trim() + " " + text.trim()).trim()) }
+    }
+
     fun send() {
         val text = _uiState.value.inputText.trim()
         if (text.isBlank() || _uiState.value.isLoading) return

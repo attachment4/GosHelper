@@ -1,5 +1,7 @@
 package com.gospomoshnik.ui.chat
 
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.imePadding
@@ -13,6 +15,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.Description
+import androidx.compose.material.icons.filled.Mic
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Send
 import androidx.compose.material.icons.filled.Share
@@ -65,6 +68,25 @@ fun ChatScreen(
         }
     }
 
+    // Голосовой ввод через системное распознавание (без разрешения RECORD_AUDIO)
+    val voiceLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        result.data
+            ?.getStringArrayListExtra(android.speech.RecognizerIntent.EXTRA_RESULTS)
+            ?.firstOrNull()
+            ?.let { spoken -> if (spoken.isNotBlank()) viewModel.appendInput(spoken) }
+    }
+    val startVoice: () -> Unit = {
+        val intent = android.content.Intent(android.speech.RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
+            putExtra(android.speech.RecognizerIntent.EXTRA_LANGUAGE_MODEL,
+                android.speech.RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
+            putExtra(android.speech.RecognizerIntent.EXTRA_LANGUAGE, "ru-RU")
+            putExtra(android.speech.RecognizerIntent.EXTRA_PROMPT, "Говорите…")
+        }
+        runCatching { voiceLauncher.launch(intent) }
+    }
+
     // Документ можно создать, когда ИИ уже что-то ответил в сохранённой сессии
     val canGenerateDoc = uiState.sessionId > 0L &&
         uiState.messages.any { it.role == "assistant" }
@@ -87,6 +109,7 @@ fun ChatScreen(
                 text      = uiState.inputText,
                 onChange  = viewModel::onInputChange,
                 onSend    = viewModel::send,
+                onMic     = startVoice,
                 isLoading = uiState.isLoading
             )
         }
@@ -321,13 +344,14 @@ private fun ChatInputBar(
     text: String,
     onChange: (String) -> Unit,
     onSend: () -> Unit,
+    onMic: () -> Unit,
     isLoading: Boolean
 ) {
     Surface(tonalElevation = 3.dp, modifier = Modifier.fillMaxWidth()) {
         Row(
             modifier          = Modifier.padding(horizontal = 14.dp, vertical = 10.dp),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
+            horizontalArrangement = Arrangement.spacedBy(6.dp)
         ) {
             OutlinedTextField(
                 value         = text,
@@ -338,6 +362,10 @@ private fun ChatInputBar(
                 maxLines      = 4,
                 textStyle     = LocalTextStyle.current.copy(fontSize = 13.sp)
             )
+            // Голосовой ввод
+            IconButton(onClick = onMic, enabled = !isLoading) {
+                Icon(Icons.Default.Mic, contentDescription = "Голосовой ввод", tint = BrandColor)
+            }
             FilledIconButton(
                 onClick = onSend,
                 enabled = text.isNotBlank() && !isLoading,
