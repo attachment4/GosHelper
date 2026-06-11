@@ -114,7 +114,7 @@ private fun SettingsGroup(title: String, content: @Composable ColumnScope.() -> 
             color      = cs.onSurface
         )
         Surface(
-            shape = RoundedCornerShape(14.dp),
+            shape = RoundedCornerShape(18.dp),
             color = cs.surface,
             modifier = Modifier.fillMaxWidth()
         ) {

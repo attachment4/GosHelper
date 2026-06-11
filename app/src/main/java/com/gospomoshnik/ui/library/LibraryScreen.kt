@@ -62,9 +62,9 @@ private fun CategoryCard(
 ) {
     val cs = MaterialTheme.colorScheme
     Surface(
-        shape           = RoundedCornerShape(14.dp),
+        shape           = RoundedCornerShape(18.dp),
         color           = cs.surface,
-        shadowElevation = 1.dp,
+        shadowElevation = 2.dp,
         modifier        = Modifier.fillMaxWidth().animateContentSize()
     ) {
         Column {

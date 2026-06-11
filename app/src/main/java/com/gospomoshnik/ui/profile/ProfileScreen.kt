@@ -109,7 +109,7 @@ fun ProfileScreen(
                 Button(
                     onClick  = onUpgradeClick,
                     modifier = Modifier.fillMaxWidth().height(50.dp),
-                    shape    = RoundedCornerShape(14.dp),
+                    shape    = RoundedCornerShape(18.dp),
                     colors   = ButtonDefaults.buttonColors(containerColor = BrandColor)
                 ) {
                     Text("Перейти на Pro — от 67 ₽/мес", fontWeight = FontWeight.SemiBold)
@@ -118,7 +118,7 @@ fun ProfileScreen(
 
             // Быстрый вход в настройки
             Surface(
-                shape    = RoundedCornerShape(14.dp),
+                shape    = RoundedCornerShape(18.dp),
                 color    = cs.surface,
                 modifier = Modifier.fillMaxWidth(),
                 onClick  = onSettingsClick
