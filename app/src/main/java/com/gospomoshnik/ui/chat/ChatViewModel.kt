@@ -139,21 +139,34 @@ class ChatViewModel @Inject constructor(
         }
     }
 
-    /** Догружает текст документа, если пользователь отправил быстрее загрузки. */
-    private suspend fun ensureReference() {
-        if (docId.isNotBlank() && reference == null) {
-            reference = withContext(Dispatchers.IO) {
-                runCatching {
-                    appContext.assets.open("docs/$docId.md").bufferedReader().use { it.readText() }
-                }.getOrNull()
+    private fun readDoc(id: String): String? = runCatching {
+        appContext.assets.open("docs/$id.md").bufferedReader().use { it.readText() }
+    }.getOrNull()
+
+    /**
+     * Подбирает проверенный материал для запроса:
+     * — если пришли из конкретного документа (docId) — всегда он;
+     * — иначе ищем 1–2 релевантных документа по тексту вопроса (RAG на устройстве).
+     */
+    private suspend fun referenceFor(history: List<ChatMessage>): String? =
+        withContext(Dispatchers.IO) {
+            if (docId.isNotBlank()) {
+                if (reference == null) reference = readDoc(docId)
+                return@withContext reference
             }
+            val lastQuestion = history.lastOrNull { it.role == "user" }?.content
+                ?: return@withContext null
+            val hits = com.gospomoshnik.ui.library.DocRetriever.search(lastQuestion, category, limit = 2)
+            if (hits.isEmpty()) return@withContext null
+            hits.mapNotNull { readDoc(it.id) }
+                .takeIf { it.isNotEmpty() }
+                ?.joinToString("\n\n---\n\n")
         }
-    }
 
     /** Общий запрос ответа ИИ по истории сообщений. */
     private suspend fun requestReply(history: List<ChatMessage>) {
-        ensureReference()
-        sendMessage(history, category, reference)
+        val ref = referenceFor(history)
+        sendMessage(history, category, ref)
             .catch { e ->
                 _uiState.update { it.copy(isLoading = false, error = humanError(e)) }
             }
