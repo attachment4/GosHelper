@@ -1,7 +1,9 @@
 package com.gospomoshnik.data.payment
 
 import retrofit2.http.Body
+import retrofit2.http.GET
 import retrofit2.http.POST
+import retrofit2.http.Path
 
 /**
  * API нашего бэкенда (FastAPI на Amvera), а НЕ ЮKassa напрямую.
@@ -20,6 +22,9 @@ interface PaymentApi {
 
     @POST("payments/confirm")
     suspend fun confirm(@Body request: ConfirmRequest): ConfirmResponse
+
+    @GET("payments/subscription/{userId}")
+    suspend fun subscription(@Path("userId") userId: String): SubscriptionResponse
 }
 
 data class ConfirmRequest(
@@ -31,4 +36,9 @@ data class ConfirmRequest(
 data class ConfirmResponse(
     val status: String,        // "succeeded" | "pending" | "canceled"
     val expiresAt: Long?       // Unix-ms окончания Pro при успехе
+)
+
+data class SubscriptionResponse(
+    val isPro: Boolean,
+    val expiresAt: Long?
 )

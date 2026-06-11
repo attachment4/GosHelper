@@ -23,6 +23,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.gospomoshnik.domain.model.ChatMessage
+import com.gospomoshnik.domain.model.FREE_DAILY_LIMIT
 import com.gospomoshnik.ui.theme.GosColors
 import kotlinx.coroutines.launch
 
@@ -160,7 +161,7 @@ private fun ChatTopBar(
                     modifier = Modifier.padding(end = 12.dp)
                 ) {
                     Text(
-                        text       = if (isPro) "PRO" else "$requestsLeft / 10",
+                        text       = if (isPro) "PRO" else "$requestsLeft / $FREE_DAILY_LIMIT",
                         color      = Color.White,
                         fontSize   = 11.sp,
                         fontWeight = FontWeight.SemiBold,

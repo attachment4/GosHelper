@@ -21,7 +21,7 @@ data class ChatUiState(
     val error: String? = null,
     val showPaywall: Boolean = false,
     val sessionId: Long = 0L,
-    val requestsLeft: Int = 10,
+    val requestsLeft: Int = com.gospomoshnik.domain.model.FREE_DAILY_LIMIT,
     val isPro: Boolean = false
 )
 

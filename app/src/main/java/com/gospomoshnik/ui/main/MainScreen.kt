@@ -21,6 +21,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.gospomoshnik.domain.model.ChatSession
+import com.gospomoshnik.domain.model.FREE_DAILY_LIMIT
 import com.gospomoshnik.ui.theme.GosColors
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -64,7 +65,7 @@ fun MainScreen(
                 .fillMaxSize()
                 .padding(padding)
         ) {
-            item { HeaderSection(requestsLeft = uiState.requestsLeft) }
+            item { HeaderSection(requestsLeft = uiState.requestsLeft, isPro = uiState.isPro) }
             item { Spacer(Modifier.height(20.dp)) }
             item {
                 SectionTitle("Категории", modifier = Modifier.padding(horizontal = 16.dp))
@@ -92,7 +93,7 @@ fun MainScreen(
 // ── Шапка в стилистике Госуслуг: белая, синий логотип ────────────────────────
 
 @Composable
-private fun HeaderSection(requestsLeft: Int) {
+private fun HeaderSection(requestsLeft: Int, isPro: Boolean) {
     Surface(color = Color.White, shadowElevation = 1.dp) {
         Column(
             modifier = Modifier
@@ -116,7 +117,7 @@ private fun HeaderSection(requestsLeft: Int) {
                     color = GosColors.BlueLight
                 ) {
                     Text(
-                        text       = "$requestsLeft / 10 запросов",
+                        text       = if (isPro) "PRO · безлимит" else "$requestsLeft / $FREE_DAILY_LIMIT сегодня",
                         color      = GosColors.Blue,
                         fontSize   = 11.sp,
                         fontWeight = FontWeight.SemiBold,

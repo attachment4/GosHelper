@@ -177,7 +177,7 @@ private fun HeroSection(onClose: () -> Unit) {
 @Composable
 private fun FeaturesList() {
     val features = listOf(
-        Pair("Безлимитные консультации ИИ",    "Без лимита на запросы каждый месяц"),
+        Pair("Безлимитные консультации ИИ",    "Сколько угодно вопросов каждый день"),
         Pair("Генерация документов PDF",        "Жалобы, заявления, претензии"),
         Pair("История всех чатов",              "Сохраняется на устройстве бессрочно"),
         Pair("Голосовой ввод вопросов",         "Говорите — ИИ слушает"),
@@ -215,37 +215,23 @@ private fun FeaturesList() {
 private fun PlansRow(selected: PlanType, onSelect: (PlanType) -> Unit) {
     Row(
         modifier              = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(10.dp)
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        PlanCard(
-            period   = "Месяц",
-            price    = "199",
-            perMonth = "/месяц",
-            saving   = null,
-            badge    = null,
-            selected = selected == PlanType.MONTHLY,
-            modifier = Modifier.weight(1f),
-            onClick  = { onSelect(PlanType.MONTHLY) }
-        )
-        PlanCard(
-            period   = "Год",
-            price    = "990",
-            perMonth = "83 ₽/мес",
-            saving   = "Экономия 1 398 ₽",
-            badge    = "Выгоднее на 58%",
-            selected = selected == PlanType.YEARLY,
-            modifier = Modifier.weight(1f),
-            onClick  = { onSelect(PlanType.YEARLY) }
-        )
+        PlanType.entries.forEach { plan ->
+            PlanCard(
+                plan     = plan,
+                badge    = if (plan == PlanType.YEARLY) "Выгодно" else null,
+                selected = selected == plan,
+                modifier = Modifier.weight(1f),
+                onClick  = { onSelect(plan) }
+            )
+        }
     }
 }
 
 @Composable
 private fun PlanCard(
-    period: String,
-    price: String,
-    perMonth: String,
-    saving: String?,
+    plan: PlanType,
     badge: String?,
     selected: Boolean,
     modifier: Modifier,
@@ -256,30 +242,28 @@ private fun PlanCard(
 
     Box(modifier = modifier) {
         Surface(
-            shape    = RoundedCornerShape(16.dp),
+            shape    = RoundedCornerShape(14.dp),
             color    = Color.White,
             modifier = Modifier
                 .fillMaxWidth()
-                .border(borderWidth, borderColor, RoundedCornerShape(16.dp))
+                .border(borderWidth, borderColor, RoundedCornerShape(14.dp))
                 .clickable(onClick = onClick)
         ) {
             Column(
-                modifier            = Modifier.padding(14.dp).padding(top = if (badge != null) 10.dp else 0.dp),
+                modifier            = Modifier
+                    .padding(horizontal = 6.dp, vertical = 14.dp)
+                    .padding(top = if (badge != null) 6.dp else 0.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Text(period, fontSize = 11.sp, color = GosColors.TextSecond)
+                Text(plan.title, fontSize = 11.sp, color = GosColors.TextSecond)
                 Spacer(Modifier.height(4.dp))
                 Text(
-                    text       = "$price ₽",
-                    fontSize   = 22.sp,
+                    text       = "${plan.priceRub} ₽",
+                    fontSize   = 19.sp,
                     fontWeight = FontWeight.Bold,
                     color      = if (selected) BrandColor else GosColors.TextPrimary
                 )
-                Text(perMonth, fontSize = 11.sp, color = GosColors.TextSecond)
-                saving?.let {
-                    Spacer(Modifier.height(4.dp))
-                    Text(it, fontSize = 11.sp, fontWeight = FontWeight.SemiBold, color = GreenColor)
-                }
+                Text(plan.perMonthHint, fontSize = 10.sp, color = GosColors.TextSecond)
             }
         }
 
@@ -287,14 +271,14 @@ private fun PlanCard(
             Surface(
                 shape    = RoundedCornerShape(20.dp),
                 color    = BrandColor,
-                modifier = Modifier.align(Alignment.TopCenter).offset(y = (-10).dp)
+                modifier = Modifier.align(Alignment.TopCenter).offset(y = (-9).dp)
             ) {
                 Text(
                     text     = it,
                     color    = Color.White,
-                    fontSize = 10.sp,
+                    fontSize = 9.sp,
                     fontWeight = FontWeight.SemiBold,
-                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 3.dp)
+                    modifier = Modifier.padding(horizontal = 9.dp, vertical = 2.dp)
                 )
             }
         }
@@ -340,7 +324,7 @@ private fun FreeNote() {
             .border(1.dp, GosColors.AmberLight, RoundedCornerShape(10.dp))
     ) {
         Text(
-            text      = "🎁 Бесплатно: 10 вопросов каждый месяц\nБез подписки — без скрытых списаний",
+            text      = "🎁 Бесплатно: 3 вопроса каждый день\nБез подписки — без скрытых списаний",
             fontSize  = 12.sp,
             color     = GoldColor,
             fontWeight = FontWeight.Medium,

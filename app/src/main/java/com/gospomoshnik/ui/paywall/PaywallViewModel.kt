@@ -56,6 +56,7 @@ class PaywallViewModel @Inject constructor(
                 it.copy(
                     payment = when (outcome) {
                         is PaymentOutcome.Success -> PaymentState.Success
+                        is PaymentOutcome.Pending -> PaymentState.Error("Платёж обрабатывается. Pro активируется после подтверждения.")
                         is PaymentOutcome.Failed  -> PaymentState.Error(outcome.reason)
                     }
                 )

@@ -1,5 +1,7 @@
 package com.gospomoshnik.data.remote
 
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Named
@@ -12,10 +14,14 @@ class GigaChatTokenManager @Inject constructor(
 ) {
     private var accessToken: String = ""
     private var expiresAt: Long = 0L
+    private val mutex = Mutex()
 
     suspend fun getBearer(): String {
         if (isValid()) return "Bearer $accessToken"
-        refresh()
+        // Один обновляющий запрос за раз — параллельные сообщения не дёргают OAuth
+        mutex.withLock {
+            if (!isValid()) refresh()
+        }
         return "Bearer $accessToken"
     }
 

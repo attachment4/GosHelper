@@ -14,7 +14,10 @@
 В APK кладётся лишь публикуемый ключ (`YOOKASSA_KEY`) и `YOOKASSA_SHOP_ID` — ими нельзя списать деньги.
 
 ## Что уже реализовано в приложении
-- `PlanType` — тарифы (199 ₽/мес, 990 ₽/год) с длительностью.
+- `PlanType` — тарифы (99 ₽/мес, 399 ₽/полгода, 799 ₽/год) с длительностью.
+- Бесплатно — 3 вопроса в день (`FREE_DAILY_LIMIT`).
+- Бэкенд `backend/` (FastAPI) уже написан: `/api/payments/confirm`, `/webhook`,
+  `/subscription/{userId}`. См. `backend/README.md`.
 - `PaymentApi` + `PaymentRepository` — подтверждение токена на бэкенде и активация Pro.
 - `PaywallViewModel` — состояния `Idle/Processing/Success/Error`.
 - `PaywallScreen` — рабочий UI: выбор плана, спиннер при оплате, успех/ошибка, авто-закрытие.

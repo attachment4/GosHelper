@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.*
 import androidx.datastore.preferences.preferencesDataStore
+import com.gospomoshnik.domain.model.FREE_DAILY_LIMIT
 import com.gospomoshnik.domain.model.SubscriptionStatus
 import com.gospomoshnik.domain.repository.SubscriptionRepository
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -27,28 +28,28 @@ class SubscriptionRepositoryImpl @Inject constructor(
         val IS_PRO          = booleanPreferencesKey("is_pro")
         val REQUESTS_USED   = intPreferencesKey("requests_used")
         val EXPIRES_AT      = longPreferencesKey("expires_at")
-        val USAGE_MONTH     = stringPreferencesKey("usage_month")   // "2026-06"
+        val USAGE_DAY       = stringPreferencesKey("usage_day")   // "2026-06-11"
     }
 
-    private fun currentMonth(): String =
-        SimpleDateFormat("yyyy-MM", Locale.US).format(Date())
+    private fun currentDay(): String =
+        SimpleDateFormat("yyyy-MM-dd", Locale.US).format(Date())
 
     override fun getStatus(): Flow<SubscriptionStatus> =
         context.dataStore.data.map { prefs ->
-            val isPro       = prefs[Keys.IS_PRO]        ?: false
-            val savedMonth  = prefs[Keys.USAGE_MONTH]   ?: currentMonth()
-            // Новый месяц — счётчик логически обнуляется (физически — при первом запросе)
-            val used        = if (savedMonth == currentMonth()) prefs[Keys.REQUESTS_USED] ?: 0 else 0
-            val expiresAt   = prefs[Keys.EXPIRES_AT]
+            val isPro     = prefs[Keys.IS_PRO]      ?: false
+            val savedDay  = prefs[Keys.USAGE_DAY]   ?: currentDay()
+            // Новый день — счётчик логически обнуляется (физически — при первом запросе)
+            val used      = if (savedDay == currentDay()) prefs[Keys.REQUESTS_USED] ?: 0 else 0
+            val expiresAt = prefs[Keys.EXPIRES_AT]
 
-            // Автоматически снять Pro если истёк срок
+            // Автоматически снять Pro, если срок истёк
             val proActive = isPro && (expiresAt == null || expiresAt > System.currentTimeMillis())
 
             SubscriptionStatus(
-                isPro          = proActive,
-                requestsUsed   = used,
-                requestsLimit  = if (proActive) Int.MAX_VALUE else 10,
-                expiresAt      = expiresAt
+                isPro         = proActive,
+                requestsUsed  = used,
+                requestsLimit = if (proActive) Int.MAX_VALUE else FREE_DAILY_LIMIT,
+                expiresAt     = expiresAt
             )
         }
 
@@ -56,10 +57,10 @@ class SubscriptionRepositoryImpl @Inject constructor(
 
     override suspend fun incrementUsage() {
         context.dataStore.edit { prefs ->
-            val month = currentMonth()
-            if (prefs[Keys.USAGE_MONTH] != month) {
-                // Первый запрос в новом месяце — сброс счётчика
-                prefs[Keys.USAGE_MONTH]   = month
+            val day = currentDay()
+            if (prefs[Keys.USAGE_DAY] != day) {
+                // Первый запрос в новом дне — сброс счётчика
+                prefs[Keys.USAGE_DAY]     = day
                 prefs[Keys.REQUESTS_USED] = 1
             } else {
                 prefs[Keys.REQUESTS_USED] = (prefs[Keys.REQUESTS_USED] ?: 0) + 1
@@ -69,15 +70,15 @@ class SubscriptionRepositoryImpl @Inject constructor(
 
     override suspend fun resetMonthlyUsage() {
         context.dataStore.edit { prefs ->
-            prefs[Keys.USAGE_MONTH]   = currentMonth()
+            prefs[Keys.USAGE_DAY]     = currentDay()
             prefs[Keys.REQUESTS_USED] = 0
         }
     }
 
     override suspend fun activatePro(expiresAt: Long) {
         context.dataStore.edit { prefs ->
-            prefs[Keys.IS_PRO]      = true
-            prefs[Keys.EXPIRES_AT]  = expiresAt
+            prefs[Keys.IS_PRO]        = true
+            prefs[Keys.EXPIRES_AT]    = expiresAt
             prefs[Keys.REQUESTS_USED] = 0
         }
     }

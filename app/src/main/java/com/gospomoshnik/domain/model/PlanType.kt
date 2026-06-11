@@ -11,10 +11,12 @@ enum class PlanType(
     val priceRub: Int,
     val days: Int,
     val title: String,
+    val perMonthHint: String,
     val ctaText: String
 ) {
-    MONTHLY(priceRub = 199, days = 30,  title = "Месяц", ctaText = "Оформить на месяц — 199 ₽"),
-    YEARLY (priceRub = 990, days = 365, title = "Год",   ctaText = "Оформить на год — 990 ₽");
+    MONTHLY (priceRub = 99,  days = 30,  title = "Месяц",  perMonthHint = "99 ₽/мес",  ctaText = "Оформить за 99 ₽/мес"),
+    HALFYEAR(priceRub = 399, days = 182, title = "Полгода", perMonthHint = "67 ₽/мес",  ctaText = "Оформить за 399 ₽/полгода"),
+    YEARLY  (priceRub = 799, days = 365, title = "Год",    perMonthHint = "67 ₽/мес",  ctaText = "Оформить за 799 ₽/год");
 
     val amountString: String get() = "%d.00".format(priceRub)
 }

@@ -84,7 +84,7 @@ fun ProfileScreen(
                         }
                     } else {
                         Text(
-                            text     = "Осталось ${subscription.requestsLeft} из ${subscription.requestsLimit} запросов в этом месяце",
+                            text     = "Осталось ${subscription.requestsLeft} из ${subscription.requestsLimit} вопросов на сегодня",
                             fontSize = 13.sp,
                             color    = BrandColor.copy(alpha = 0.8f)
                         )
@@ -109,12 +109,12 @@ fun ProfileScreen(
                     shape    = RoundedCornerShape(14.dp),
                     colors   = ButtonDefaults.buttonColors(containerColor = BrandColor)
                 ) {
-                    Text("Перейти на Pro — от 83 ₽/мес", fontWeight = FontWeight.SemiBold)
+                    Text("Перейти на Pro — от 67 ₽/мес", fontWeight = FontWeight.SemiBold)
                 }
             }
 
             Text(
-                text     = "Лимит обновляется в начале каждого месяца.\nИстория чатов хранится только на устройстве.",
+                text     = "Лимит обновляется каждый день.\nИстория чатов хранится только на устройстве.",
                 fontSize = 12.sp,
                 color    = GosColors.TextSecond,
                 lineHeight = 18.sp
