@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -5,6 +7,15 @@ plugins {
     alias(libs.plugins.hilt)
     alias(libs.plugins.ksp)
 }
+
+// local.properties Gradle сам в свойства проекта НЕ загружает (оттуда берётся
+// только sdk.dir), поэтому читаем файл явно — иначе ключи окажутся пустыми.
+val localProps = Properties().apply {
+    val f = rootProject.file("local.properties")
+    if (f.exists()) f.inputStream().use { load(it) }
+}
+fun secret(name: String, default: String = ""): String =
+    localProps.getProperty(name) ?: project.findProperty(name)?.toString() ?: default
 
 android {
     namespace  = "com.gospomoshnik"
@@ -20,19 +31,15 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
         // GigaChat credentials — задать в local.properties: GIGACHAT_AUTH=<base64(clientId:secret)>
-        val gigaChatAuth = project.findProperty("GIGACHAT_AUTH")?.toString() ?: ""
-        buildConfigField("String", "GIGACHAT_AUTH", "\"$gigaChatAuth\"")
+        buildConfigField("String", "GIGACHAT_AUTH", "\"${secret("GIGACHAT_AUTH")}\"")
 
         // ── Платежи (ЮKassa) ──────────────────────────────────────────────
         // Публикуемый ключ магазина и shopId — безопасны для APK.
         // Секретный ключ живёт ТОЛЬКО на бэкенде.
-        val yooShopId = project.findProperty("YOOKASSA_SHOP_ID")?.toString() ?: ""
-        val yooKey    = project.findProperty("YOOKASSA_KEY")?.toString() ?: ""
-        val payBaseUrl = project.findProperty("PAYMENTS_BASE_URL")?.toString()
-            ?: "https://example.invalid/api/"   // заменить на адрес бэкенда
-        buildConfigField("String", "YOOKASSA_SHOP_ID", "\"$yooShopId\"")
-        buildConfigField("String", "YOOKASSA_KEY",     "\"$yooKey\"")
-        buildConfigField("String", "PAYMENTS_BASE_URL", "\"$payBaseUrl\"")
+        buildConfigField("String", "YOOKASSA_SHOP_ID", "\"${secret("YOOKASSA_SHOP_ID")}\"")
+        buildConfigField("String", "YOOKASSA_KEY",     "\"${secret("YOOKASSA_KEY")}\"")
+        buildConfigField("String", "PAYMENTS_BASE_URL",
+            "\"${secret("PAYMENTS_BASE_URL", "https://example.invalid/api/")}\"")
 
         // Room: экспорт схемы для миграций
         ksp {
