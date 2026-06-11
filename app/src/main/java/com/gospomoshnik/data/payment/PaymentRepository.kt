@@ -35,6 +35,14 @@ class PaymentRepository @Inject constructor(
             return PaymentOutcome.Success(expiresAt)
         }
 
+        // ЮKassa подключается после публикации в магазине. Пока реквизитов нет —
+        // не дёргаем сеть и показываем понятное сообщение вместо ошибки.
+        if (BuildConfig.YOOKASSA_SHOP_ID.isBlank()) {
+            return PaymentOutcome.Failed(
+                "Оплата скоро будет доступна. Сейчас доступно 3 бесплатных вопроса в день."
+            )
+        }
+
         return runCatching {
             val resp = api.confirm(
                 ConfirmRequest(

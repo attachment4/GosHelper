@@ -1,13 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <!-- Интернет — для GigaChat API и ЮKassa -->
+    <!-- Интернет — для GigaChat API и (в будущем) оплаты. Единственное разрешение:
+         персональные данные не собираем, документы пишем во внутреннюю память. -->
     <uses-permission android:name="android.permission.INTERNET" />
-    <!-- Запись PDF в Downloads -->
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
-        android:maxSdkVersion="28" />
-    <!-- Голосовой ввод (Фаза 6) -->
-    <uses-permission android:name="android.permission.RECORD_AUDIO" />
 
     <application
         android:name=".GospomoshnikApp"
