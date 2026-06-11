@@ -186,10 +186,10 @@ private fun DocPreviewCard(title: String) {
                 Icon(Icons.Default.Description, contentDescription = null, tint = BrandColor, modifier = Modifier.size(20.dp))
                 Text(title, fontWeight = FontWeight.SemiBold, fontSize = 13.sp)
             }
-            HorizontalDivider(color = GosColors.Divider)
+            HorizontalDivider(color = MaterialTheme.colorScheme.outline)
             Spacer(Modifier.height(8.dp))
-            Text("📌 Тип: Юридическая жалоба", fontSize = 11.sp, color = GosColors.TextSecond)
-            Text("⚖️ Основание: КоАП РФ / ГК РФ", fontSize = 11.sp, color = GosColors.TextSecond)
+            Text("📌 Тип: Юридическая жалоба", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text("⚖️ Основание: КоАП РФ / ГК РФ", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
     }
 }
@@ -201,7 +201,7 @@ private fun DocumentFieldRow(field: DocumentField, onChange: (String) -> Unit) {
             text          = field.label.uppercase(),
             fontSize      = 11.sp,
             fontWeight    = FontWeight.SemiBold,
-            color         = GosColors.TextSecond,
+            color         = MaterialTheme.colorScheme.onSurfaceVariant,
             letterSpacing = 0.5.sp
         )
         if (field.editable) {
@@ -223,15 +223,15 @@ private fun DocumentFieldRow(field: DocumentField, onChange: (String) -> Unit) {
         } else {
             Surface(
                 shape = RoundedCornerShape(8.dp),
-                color = GosColors.Background,
+                color = MaterialTheme.colorScheme.surfaceVariant,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .border(1.dp, GosColors.Divider, RoundedCornerShape(8.dp))
+                    .border(1.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(8.dp))
             ) {
                 Text(
                     text     = field.value.ifBlank { "—" },
                     fontSize = 13.sp,
-                    color    = GosColors.TextPrimary,
+                    color    = MaterialTheme.colorScheme.onSurface,
                     modifier = Modifier.padding(horizontal = 12.dp, vertical = 10.dp)
                 )
             }
@@ -246,7 +246,7 @@ private fun BodyTextEditor(text: String, onChange: (String) -> Unit) {
             text          = "СУТЬ ЖАЛОБЫ",
             fontSize      = 11.sp,
             fontWeight    = FontWeight.SemiBold,
-            color         = GosColors.TextSecond,
+            color         = MaterialTheme.colorScheme.onSurfaceVariant,
             letterSpacing = 0.5.sp
         )
         OutlinedTextField(
@@ -266,9 +266,9 @@ private fun PrivacyNote() {
         horizontalArrangement = Arrangement.Center,
         verticalAlignment     = Alignment.CenterVertically
     ) {
-        Icon(Icons.Default.Lock, contentDescription = null, modifier = Modifier.size(13.dp), tint = GosColors.TextSecond)
+        Icon(Icons.Default.Lock, contentDescription = null, modifier = Modifier.size(13.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant)
         Spacer(Modifier.width(4.dp))
-        Text("Данные хранятся только на вашем устройстве", fontSize = 11.sp, color = GosColors.TextSecond)
+        Text("Данные хранятся только на вашем устройстве", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
     }
 }
 

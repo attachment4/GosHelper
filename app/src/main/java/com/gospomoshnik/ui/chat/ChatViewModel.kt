@@ -46,6 +46,11 @@ class ChatViewModel @Inject constructor(
     init {
         if (sessionId > 0L) observeMessages()
         observeSubscription()
+        // Готовый вопрос (переход из библиотеки документов) — подставляем в поле ввода
+        val prefill: String = savedStateHandle["question"] ?: ""
+        if (prefill.isNotBlank()) {
+            _uiState.update { it.copy(inputText = prefill) }
+        }
     }
 
     private fun observeMessages() {

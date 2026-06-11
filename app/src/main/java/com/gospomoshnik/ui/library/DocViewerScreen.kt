@@ -23,7 +23,7 @@ import kotlinx.coroutines.withContext
 @Composable
 fun DocViewerScreen(
     docId: String,
-    onAskInChat: (String) -> Unit,   // category
+    onAskInChat: (category: String, question: String) -> Unit,
     onBack: () -> Unit
 ) {
     val context = LocalContext.current
@@ -65,8 +65,9 @@ fun DocViewerScreen(
 
             // Перейти в чат с готовым вопросом по теме документа
             val category = categoryForDoc(docId)
+            val question = doc?.let { "Подскажите подробнее по теме: «${it.title}». ${it.subtitle}." } ?: ""
             Button(
-                onClick  = { onAskInChat(category) },
+                onClick  = { onAskInChat(category, question) },
                 modifier = Modifier.fillMaxWidth().height(50.dp),
                 shape    = RoundedCornerShape(14.dp),
                 colors   = ButtonDefaults.buttonColors(containerColor = GosColors.Blue)

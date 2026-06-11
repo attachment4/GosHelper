@@ -54,7 +54,7 @@ fun PaywallScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(GosColors.Background)
+            .background(MaterialTheme.colorScheme.background)
             .verticalScroll(rememberScrollState())
     ) {
         HeroSection(onClose = onClose)
@@ -200,12 +200,12 @@ private fun FeaturesList() {
                     Icon(Icons.Default.Check, contentDescription = null, tint = GreenColor, modifier = Modifier.size(13.dp))
                 }
                 Column {
-                    Text(title, fontSize = 13.sp, fontWeight = FontWeight.Medium, color = GosColors.TextPrimary)
-                    Text(sub, fontSize = 11.sp, color = GosColors.TextSecond)
+                    Text(title, fontSize = 13.sp, fontWeight = FontWeight.Medium, color = MaterialTheme.colorScheme.onSurface)
+                    Text(sub, fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             }
             if (i < features.size - 1) {
-                HorizontalDivider(color = GosColors.Divider)
+                HorizontalDivider(color = MaterialTheme.colorScheme.outline)
             }
         }
     }
@@ -237,13 +237,13 @@ private fun PlanCard(
     modifier: Modifier,
     onClick: () -> Unit
 ) {
-    val borderColor = if (selected) BrandColor else GosColors.Divider
+    val borderColor = if (selected) BrandColor else MaterialTheme.colorScheme.outline
     val borderWidth = if (selected) 2.dp else 1.5.dp
 
     Box(modifier = modifier) {
         Surface(
             shape    = RoundedCornerShape(14.dp),
-            color    = Color.White,
+            color    = MaterialTheme.colorScheme.surface,
             modifier = Modifier
                 .fillMaxWidth()
                 .border(borderWidth, borderColor, RoundedCornerShape(14.dp))
@@ -255,15 +255,15 @@ private fun PlanCard(
                     .padding(top = if (badge != null) 6.dp else 0.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Text(plan.title, fontSize = 11.sp, color = GosColors.TextSecond)
+                Text(plan.title, fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 Spacer(Modifier.height(4.dp))
                 Text(
                     text       = "${plan.priceRub} ₽",
                     fontSize   = 19.sp,
                     fontWeight = FontWeight.Bold,
-                    color      = if (selected) BrandColor else GosColors.TextPrimary
+                    color      = if (selected) BrandColor else MaterialTheme.colorScheme.onSurface
                 )
-                Text(plan.perMonthHint, fontSize = 10.sp, color = GosColors.TextSecond)
+                Text(plan.perMonthHint, fontSize = 10.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }
 
@@ -295,7 +295,7 @@ private fun PaymentBadges() {
         listOf(
             Triple("СБП",   GosColors.Green, GosColors.GreenLight),
             Triple("ЮKassa", GosColors.BlueDark, BrandLight),
-            Triple("Карта",  GosColors.TextPrimary, GosColors.Background)
+            Triple("Карта",  MaterialTheme.colorScheme.onSurfaceVariant, MaterialTheme.colorScheme.surfaceVariant)
         ).forEach { (label, textColor, bgColor) ->
             Surface(
                 shape    = RoundedCornerShape(8.dp),
@@ -340,7 +340,7 @@ private fun Disclaimer() {
     Text(
         text      = "Подписка продлевается автоматически.\nОтменить можно в любой момент в профиле.",
         fontSize  = 11.sp,
-        color     = GosColors.TextSecond,
+        color     = MaterialTheme.colorScheme.onSurfaceVariant,
         textAlign = TextAlign.Center,
         lineHeight = 17.sp,
         modifier  = Modifier.fillMaxWidth()

@@ -24,9 +24,9 @@ import com.gospomoshnik.ui.settings.SettingsScreen
 
 sealed class Screen(val route: String) {
     object Main     : Screen("main")
-    object Chat     : Screen("chat/{category}?sessionId={sessionId}") {
-        fun createRoute(category: String, sessionId: Long = 0L) =
-            "chat/$category?sessionId=$sessionId"
+    object Chat     : Screen("chat/{category}?sessionId={sessionId}&question={question}") {
+        fun createRoute(category: String, sessionId: Long = 0L, question: String = "") =
+            "chat/$category?sessionId=$sessionId&question=${android.net.Uri.encode(question)}"
     }
     object Document : Screen("document/{sessionId}") {
         fun createRoute(sessionId: Long) = "document/$sessionId"
@@ -86,7 +86,8 @@ fun NavGraph(navController: NavHostController) {
             route     = Screen.Chat.route,
             arguments = listOf(
                 navArgument("category")  { type = NavType.StringType },
-                navArgument("sessionId") { type = NavType.LongType; defaultValue = 0L }
+                navArgument("sessionId") { type = NavType.LongType; defaultValue = 0L },
+                navArgument("question")  { type = NavType.StringType; defaultValue = "" }
             )
         ) { backStack ->
             val category = backStack.arguments?.getString("category") ?: "general"
@@ -155,8 +156,8 @@ fun NavGraph(navController: NavHostController) {
         ) { backStack ->
             DocViewerScreen(
                 docId       = backStack.arguments?.getString("docId") ?: "",
-                onAskInChat = { category ->
-                    navController.navigate(Screen.Chat.createRoute(category))
+                onAskInChat = { category, question ->
+                    navController.navigate(Screen.Chat.createRoute(category, question = question))
                 },
                 onBack      = { navController.popBackStack() }
             )
