@@ -23,7 +23,7 @@
 - Госавтоинспекция МВД России — https://гибдд.рф (проверка и оплата штрафов, запись)
 - Госуслуги, штрафы ГИБДД — https://www.gosuslugi.ru/situation/fines
 - Проверка штрафов — https://www.gosuslugi.ru → «Платежи» → «Штрафы ГИБДД»
-- Текст КоАП РФ — http://pravo.gov.ru или https://www.consultant.ru/document/cons_doc_LAW_34661/
+- Текст КоАП РФ (действующая редакция) — http://pravo.gov.ru
 
 ## Навигация: проверить и оплатить штраф через Госуслуги
 1. Войдите на https://www.gosuslugi.ru под своей учётной записью.

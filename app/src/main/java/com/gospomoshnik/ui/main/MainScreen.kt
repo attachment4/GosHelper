@@ -55,7 +55,7 @@ fun MainScreen(
     val uiState by viewModel.uiState.collectAsState()
 
     Scaffold(
-        containerColor = GosColors.Background,
+        containerColor = MaterialTheme.colorScheme.background,
         bottomBar = {
             BottomNavigationBar(onProfileClick = onProfileClick)
         }
@@ -94,7 +94,7 @@ fun MainScreen(
 
 @Composable
 private fun HeaderSection(requestsLeft: Int, isPro: Boolean) {
-    Surface(color = Color.White, shadowElevation = 1.dp) {
+    Surface(color = MaterialTheme.colorScheme.surface, shadowElevation = 1.dp) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -128,13 +128,13 @@ private fun HeaderSection(requestsLeft: Int, isPro: Boolean) {
             Spacer(Modifier.height(16.dp))
             Text(
                 text       = "Чем могу помочь?",
-                color      = GosColors.TextPrimary,
+                color      = MaterialTheme.colorScheme.onSurface,
                 fontSize   = 22.sp,
                 fontWeight = FontWeight.Bold
             )
             Text(
                 text     = "ИИ-консультант по законодательству РФ",
-                color    = GosColors.TextSecond,
+                color    = MaterialTheme.colorScheme.onSurfaceVariant,
                 fontSize = 13.sp,
                 modifier = Modifier.padding(top = 4.dp)
             )
@@ -148,7 +148,7 @@ private fun SectionTitle(text: String, modifier: Modifier = Modifier) {
         text       = text,
         fontSize   = 15.sp,
         fontWeight = FontWeight.SemiBold,
-        color      = GosColors.TextPrimary,
+        color      = MaterialTheme.colorScheme.onSurface,
         modifier   = modifier
     )
 }
@@ -186,7 +186,7 @@ private fun CategoryCard(
     Surface(
         modifier        = modifier.clickable(onClick = onClick),
         shape           = RoundedCornerShape(14.dp),
-        color           = Color.White,
+        color           = MaterialTheme.colorScheme.surface,
         shadowElevation = 1.dp
     ) {
         Column(modifier = Modifier.padding(14.dp)) {
@@ -209,12 +209,12 @@ private fun CategoryCard(
                 text       = category.label,
                 fontWeight = FontWeight.SemiBold,
                 fontSize   = 14.sp,
-                color      = GosColors.TextPrimary
+                color      = MaterialTheme.colorScheme.onSurface
             )
             Text(
                 text     = category.subtitle,
                 fontSize = 11.sp,
-                color    = GosColors.TextSecond
+                color    = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
     }
@@ -226,7 +226,7 @@ private fun CategoryCard(
 private fun RecentSessionItem(session: ChatSession, onClick: () -> Unit) {
     Surface(
         shape           = RoundedCornerShape(12.dp),
-        color           = Color.White,
+        color           = MaterialTheme.colorScheme.surface,
         shadowElevation = 1.dp,
         modifier        = Modifier
             .fillMaxWidth()
@@ -257,19 +257,19 @@ private fun RecentSessionItem(session: ChatSession, onClick: () -> Unit) {
                     text       = session.title,
                     fontWeight = FontWeight.Medium,
                     fontSize   = 13.sp,
-                    color      = GosColors.TextPrimary,
+                    color      = MaterialTheme.colorScheme.onSurface,
                     maxLines   = 1
                 )
                 Text(
                     text     = formatDate(session.updatedAt),
                     fontSize = 11.sp,
-                    color    = GosColors.TextSecond
+                    color    = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
             Icon(
                 Icons.Default.ChevronRight,
                 contentDescription = null,
-                tint = GosColors.TextSecond
+                tint = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
     }
@@ -290,7 +290,7 @@ private fun formatDate(timestamp: Long): String {
 
 @Composable
 private fun BottomNavigationBar(onProfileClick: () -> Unit) {
-    NavigationBar(containerColor = Color.White) {
+    NavigationBar(containerColor = MaterialTheme.colorScheme.surface) {
         NavigationBarItem(
             selected = true,
             onClick  = {},
@@ -308,8 +308,8 @@ private fun BottomNavigationBar(onProfileClick: () -> Unit) {
             icon     = { Icon(Icons.Default.Person, contentDescription = "Профиль") },
             label    = { Text("Профиль", fontSize = 11.sp) },
             colors   = NavigationBarItemDefaults.colors(
-                unselectedIconColor = GosColors.TextSecond,
-                unselectedTextColor = GosColors.TextSecond
+                unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant
             )
         )
     }

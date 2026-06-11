@@ -11,6 +11,7 @@ import com.gospomoshnik.ui.document.DocumentScreen
 import com.gospomoshnik.ui.main.MainScreen
 import com.gospomoshnik.ui.paywall.PaywallScreen
 import com.gospomoshnik.ui.profile.ProfileScreen
+import com.gospomoshnik.ui.settings.SettingsScreen
 
 sealed class Screen(val route: String) {
     object Main     : Screen("main")
@@ -23,6 +24,7 @@ sealed class Screen(val route: String) {
     }
     object Paywall  : Screen("paywall")
     object Profile  : Screen("profile")
+    object Settings : Screen("settings")
 }
 
 @Composable
@@ -83,9 +85,14 @@ fun NavGraph(navController: NavHostController) {
 
         composable(Screen.Profile.route) {
             ProfileScreen(
-                onUpgradeClick = { navController.navigate(Screen.Paywall.route) },
-                onBack         = { navController.popBackStack() }
+                onUpgradeClick  = { navController.navigate(Screen.Paywall.route) },
+                onSettingsClick = { navController.navigate(Screen.Settings.route) },
+                onBack          = { navController.popBackStack() }
             )
+        }
+
+        composable(Screen.Settings.route) {
+            SettingsScreen(onBack = { navController.popBackStack() })
         }
     }
 }

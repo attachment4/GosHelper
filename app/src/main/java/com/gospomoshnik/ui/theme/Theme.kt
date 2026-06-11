@@ -1,8 +1,14 @@
 package com.gospomoshnik.ui.theme
 
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.Density
+import com.gospomoshnik.domain.model.AppSettings
+import com.gospomoshnik.domain.model.ThemeMode
 
 /**
  * Палитра в стилистике государственных сервисов РФ (Госуслуги):
@@ -59,13 +65,28 @@ private val DarkColorScheme = darkColorScheme(
 
 @Composable
 fun GospomoshnikTheme(
-    darkTheme: Boolean = false,
+    settings: AppSettings = AppSettings(),
     content: @Composable () -> Unit
 ) {
+    val darkTheme = when (settings.themeMode) {
+        ThemeMode.SYSTEM -> isSystemInDarkTheme()
+        ThemeMode.LIGHT  -> false
+        ThemeMode.DARK   -> true
+    }
     val colorScheme = if (darkTheme) DarkColorScheme else LightColorScheme
-    MaterialTheme(
-        colorScheme = colorScheme,
-        typography  = Typography(),
-        content     = content
+
+    // Масштаб шрифта применяем к плотности — увеличиваются все sp-размеры разом
+    val baseDensity = LocalDensity.current
+    val scaledDensity = Density(
+        density   = baseDensity.density,
+        fontScale = baseDensity.fontScale * settings.fontSize.scale
     )
+
+    CompositionLocalProvider(LocalDensity provides scaledDensity) {
+        MaterialTheme(
+            colorScheme = colorScheme,
+            typography  = Typography(),
+            content     = content
+        )
+    }
 }

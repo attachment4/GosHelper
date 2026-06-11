@@ -2,6 +2,7 @@ package com.gospomoshnik.ui.chat
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -62,6 +63,8 @@ fun ChatScreen(
         uiState.messages.any { it.role == "assistant" }
 
     Scaffold(
+        modifier       = Modifier.imePadding(),   // поднимаем ввод над клавиатурой
+        containerColor = MaterialTheme.colorScheme.background,
         topBar = {
             ChatTopBar(
                 category        = category,
@@ -193,7 +196,7 @@ private fun MessageBubble(msg: ChatMessage) {
                 bottomEnd   = if (isUser) 4.dp else 16.dp,
                 bottomStart = if (isUser) 16.dp else 4.dp
             ),
-            color           = if (isUser) BrandColor else Color.White,
+            color           = if (isUser) BrandColor else MaterialTheme.colorScheme.surface,
             shadowElevation = 1.dp,
             modifier        = Modifier.widthIn(max = 290.dp)
         ) {
@@ -209,7 +212,7 @@ private fun MessageBubble(msg: ChatMessage) {
                 // Ответ ИИ приходит в Markdown — рендерим со списками и ссылками
                 MarkdownText(
                     markdown = msg.content,
-                    color    = GosColors.TextPrimary,
+                    color    = MaterialTheme.colorScheme.onSurface,
                     modifier = Modifier.padding(horizontal = 13.dp, vertical = 10.dp)
                 )
             }
@@ -238,7 +241,7 @@ private fun TypingIndicator() {
         Spacer(Modifier.width(8.dp))
         Surface(
             shape           = RoundedCornerShape(16.dp, 16.dp, 16.dp, 4.dp),
-            color           = Color.White,
+            color           = MaterialTheme.colorScheme.surface,
             shadowElevation = 1.dp
         ) {
             Row(
@@ -269,13 +272,13 @@ private fun WelcomePlaceholder(category: String) {
                 text       = "Задайте вопрос по теме\n«${categoryTitle(category)}»",
                 fontSize   = 14.sp,
                 fontWeight = FontWeight.Medium,
-                color      = GosColors.TextPrimary
+                color      = MaterialTheme.colorScheme.onSurface
             )
             Spacer(Modifier.height(6.dp))
             Text(
                 text       = "ИИ ответит и при необходимости\nпоможет составить документ",
                 fontSize   = 12.sp,
-                color      = GosColors.TextSecond,
+                color      = MaterialTheme.colorScheme.onSurfaceVariant,
                 lineHeight = 18.sp
             )
         }
