@@ -20,7 +20,8 @@ data class GigaChatRequest(
     val messages: List<GigaChatMessage>,
     // Низкая температура — меньше «фантазий», важно для точности статей и сумм
     val temperature: Double = 0.3,
-    val max_tokens: Int = 1536,
+    // Больше токенов — ответы исчерпывающие, не обрываются на полуслове
+    val max_tokens: Int = 2400,
     val stream: Boolean = false
 )
 
