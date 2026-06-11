@@ -15,6 +15,8 @@ import androidx.navigation.navArgument
 import com.gospomoshnik.ui.chat.ChatScreen
 import com.gospomoshnik.ui.document.DocumentScreen
 import com.gospomoshnik.ui.legal.LegalScreen
+import com.gospomoshnik.ui.library.DocViewerScreen
+import com.gospomoshnik.ui.library.LibraryScreen
 import com.gospomoshnik.ui.main.MainScreen
 import com.gospomoshnik.ui.paywall.PaywallScreen
 import com.gospomoshnik.ui.profile.ProfileScreen
@@ -34,6 +36,10 @@ sealed class Screen(val route: String) {
     object Settings : Screen("settings")
     object Legal    : Screen("legal/{doc}") {
         fun createRoute(doc: String) = "legal/$doc"
+    }
+    object Library  : Screen("library")
+    object DocView  : Screen("docview/{docId}") {
+        fun createRoute(docId: String) = "docview/$docId"
     }
 }
 
@@ -69,6 +75,9 @@ fun NavGraph(navController: NavHostController) {
                 },
                 onProfileClick = {
                     navController.navigate(Screen.Profile.route)
+                },
+                onLibraryClick = {
+                    navController.navigate(Screen.Library.route)
                 }
             )
         }
@@ -130,6 +139,26 @@ fun NavGraph(navController: NavHostController) {
             LegalScreen(
                 doc    = backStack.arguments?.getString("doc") ?: "terms",
                 onBack = { navController.popBackStack() }
+            )
+        }
+
+        composable(Screen.Library.route) {
+            LibraryScreen(
+                onOpenDoc = { docId -> navController.navigate(Screen.DocView.createRoute(docId)) },
+                onBack    = { navController.popBackStack() }
+            )
+        }
+
+        composable(
+            route     = Screen.DocView.route,
+            arguments = listOf(navArgument("docId") { type = NavType.StringType })
+        ) { backStack ->
+            DocViewerScreen(
+                docId       = backStack.arguments?.getString("docId") ?: "",
+                onAskInChat = { category ->
+                    navController.navigate(Screen.Chat.createRoute(category))
+                },
+                onBack      = { navController.popBackStack() }
             )
         }
     }

@@ -50,6 +50,7 @@ fun MainScreen(
     onCategoryClick: (String) -> Unit,
     onHistoryItemClick: (String, Long) -> Unit,
     onProfileClick: () -> Unit,
+    onLibraryClick: () -> Unit,
     viewModel: MainViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -57,7 +58,7 @@ fun MainScreen(
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
         bottomBar = {
-            BottomNavigationBar(onProfileClick = onProfileClick)
+            BottomNavigationBar(onProfileClick = onProfileClick, onLibraryClick = onLibraryClick)
         }
     ) { padding ->
         LazyColumn(
@@ -289,7 +290,11 @@ private fun formatDate(timestamp: Long): String {
 // ── Нижняя навигация: только рабочие разделы ─────────────────────────────────
 
 @Composable
-private fun BottomNavigationBar(onProfileClick: () -> Unit) {
+private fun BottomNavigationBar(onProfileClick: () -> Unit, onLibraryClick: () -> Unit) {
+    val unselected = NavigationBarItemDefaults.colors(
+        unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+        unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant
+    )
     NavigationBar(containerColor = MaterialTheme.colorScheme.surface) {
         NavigationBarItem(
             selected = true,
@@ -304,13 +309,17 @@ private fun BottomNavigationBar(onProfileClick: () -> Unit) {
         )
         NavigationBarItem(
             selected = false,
+            onClick  = onLibraryClick,
+            icon     = { Icon(Icons.Default.Description, contentDescription = "Документы") },
+            label    = { Text("Документы", fontSize = 11.sp) },
+            colors   = unselected
+        )
+        NavigationBarItem(
+            selected = false,
             onClick  = onProfileClick,
             icon     = { Icon(Icons.Default.Person, contentDescription = "Профиль") },
             label    = { Text("Профиль", fontSize = 11.sp) },
-            colors   = NavigationBarItemDefaults.colors(
-                unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant
-            )
+            colors   = unselected
         )
     }
 }
