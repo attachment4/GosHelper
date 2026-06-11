@@ -25,6 +25,7 @@ import com.gospomoshnik.domain.model.ThemeMode
 @Composable
 fun SettingsScreen(
     onBack: () -> Unit,
+    onOpenLegal: (String) -> Unit,
     viewModel: SettingsViewModel = hiltViewModel()
 ) {
     val settings by viewModel.settings.collectAsState()
@@ -90,6 +91,13 @@ fun SettingsScreen(
                     fontSize = 14.sp,
                     color    = cs.onSurfaceVariant
                 )
+            }
+
+            // ── Документы ────────────────────────────────────────────────
+            SettingsGroup(title = "Правовые документы") {
+                OptionRow(label = "Условия использования", selected = false, onClick = { onOpenLegal("terms") })
+                OptionRow(label = "Политика конфиденциальности", selected = false, onClick = { onOpenLegal("privacy") })
+                OptionRow(label = "Отказ от ответственности", selected = false, onClick = { onOpenLegal("disclaimer") })
             }
         }
     }
