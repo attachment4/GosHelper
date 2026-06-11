@@ -99,29 +99,37 @@ class ChatViewModel @Inject constructor(
             val userMsg = ChatMessage(sessionId = sessionId, role = "user", content = text)
             chatRepository.insertMessage(userMsg)
 
-            val history = _uiState.value.messages + userMsg
-
-            sendMessage(history, category)
-                .catch { e ->
-                    // Оставляем вопрос видимым и показываем причину ошибки
-                    _uiState.update {
-                        it.copy(isLoading = false, error = humanError(e))
-                    }
-                }
-                .collect { reply ->
-                    val assistantMsg = ChatMessage(
-                        sessionId = sessionId,
-                        role      = "assistant",
-                        content   = reply
-                    )
-                    chatRepository.insertMessage(assistantMsg)
-                    chatRepository.touchSession(sessionId)
-                    // Списать запрос только после успешного ответа —
-                    // ошибки сети не тратят лимит
-                    checkSubscription.consumeRequest()
-                    _uiState.update { it.copy(isLoading = false) }
-                }
+            requestReply(_uiState.value.messages + userMsg)
         }
+    }
+
+    /** Повторить последний запрос, если ответ не пришёл (ошибка сети/сервера). */
+    fun retry() {
+        if (_uiState.value.isLoading) return
+        // Берём текущую историю (последний вопрос пользователя уже в ней)
+        val history = _uiState.value.messages
+        if (history.lastOrNull()?.role != "user") return
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoading = true, error = null) }
+            requestReply(history)
+        }
+    }
+
+    /** Общий запрос ответа ИИ по истории сообщений. */
+    private suspend fun requestReply(history: List<ChatMessage>) {
+        sendMessage(history, category)
+            .catch { e ->
+                _uiState.update { it.copy(isLoading = false, error = humanError(e)) }
+            }
+            .collect { reply ->
+                chatRepository.insertMessage(
+                    ChatMessage(sessionId = sessionId, role = "assistant", content = reply)
+                )
+                chatRepository.touchSession(sessionId)
+                // Списываем запрос только после успешного ответа
+                checkSubscription.consumeRequest()
+                _uiState.update { it.copy(isLoading = false) }
+            }
     }
 
     fun dismissPaywall() {
@@ -140,6 +148,9 @@ class ChatViewModel @Inject constructor(
         e is java.net.SocketTimeoutException   -> "Сервер не отвечает, попробуйте ещё раз"
         e is javax.net.ssl.SSLException        -> "Ошибка защищённого соединения"
         e.message?.contains("401") == true     -> "Ошибка авторизации GigaChat — проверьте ключ"
+        e.message?.contains("429") == true     -> "Слишком много запросов. Подождите немного и повторите."
+        e.message?.contains("500") == true ||
+        e.message?.contains("503") == true     -> "Сервис ИИ временно недоступен, попробуйте позже"
         else                                   -> e.message ?: "Неизвестная ошибка"
     }
 }

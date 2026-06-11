@@ -11,8 +11,11 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.Description
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Send
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -20,6 +23,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -105,7 +111,7 @@ fun ChatScreen(
             }
 
             uiState.error?.let { err ->
-                ErrorBanner(message = err, onDismiss = viewModel::clearError)
+                ErrorBanner(message = err, onRetry = viewModel::retry, onDismiss = viewModel::clearError)
             }
         }
     }
@@ -177,35 +183,72 @@ private fun MessageBubble(msg: ChatMessage) {
             AiAvatar()
             Spacer(Modifier.width(8.dp))
         }
-        Surface(
-            shape = RoundedCornerShape(
-                topStart    = 16.dp,
-                topEnd      = 16.dp,
-                bottomEnd   = if (isUser) 4.dp else 16.dp,
-                bottomStart = if (isUser) 16.dp else 4.dp
-            ),
-            color           = if (isUser) BrandColor else MaterialTheme.colorScheme.surface,
-            shadowElevation = 1.dp,
-            modifier        = Modifier.widthIn(max = 290.dp)
-        ) {
-            if (isUser) {
-                Text(
-                    text       = msg.content,
-                    color      = Color.White,
-                    fontSize   = 13.sp,
-                    lineHeight = 20.sp,
-                    modifier   = Modifier.padding(horizontal = 13.dp, vertical = 10.dp)
-                )
-            } else {
-                // Ответ ИИ приходит в Markdown — рендерим со списками и ссылками
-                MarkdownText(
-                    markdown = msg.content,
-                    color    = MaterialTheme.colorScheme.onSurface,
-                    modifier = Modifier.padding(horizontal = 13.dp, vertical = 10.dp)
-                )
+        Column(horizontalAlignment = if (isUser) Alignment.End else Alignment.Start) {
+            Surface(
+                shape = RoundedCornerShape(
+                    topStart    = 16.dp,
+                    topEnd      = 16.dp,
+                    bottomEnd   = if (isUser) 4.dp else 16.dp,
+                    bottomStart = if (isUser) 16.dp else 4.dp
+                ),
+                color           = if (isUser) BrandColor else MaterialTheme.colorScheme.surface,
+                shadowElevation = 1.dp,
+                modifier        = Modifier.widthIn(max = 290.dp)
+            ) {
+                if (isUser) {
+                    Text(
+                        text       = msg.content,
+                        color      = Color.White,
+                        fontSize   = 13.sp,
+                        lineHeight = 20.sp,
+                        modifier   = Modifier.padding(horizontal = 13.dp, vertical = 10.dp)
+                    )
+                } else {
+                    // Ответ ИИ приходит в Markdown — рендерим со списками и ссылками
+                    MarkdownText(
+                        markdown = msg.content,
+                        color    = MaterialTheme.colorScheme.onSurface,
+                        modifier = Modifier.padding(horizontal = 13.dp, vertical = 10.dp)
+                    )
+                }
             }
+            // Под ответом ИИ — копировать и поделиться
+            if (!isUser) MessageActions(text = msg.content)
         }
         if (isUser) Spacer(Modifier.width(8.dp))
+    }
+}
+
+@Composable
+private fun MessageActions(text: String) {
+    val clipboard = LocalClipboardManager.current
+    val context = LocalContext.current
+    Row(
+        modifier = Modifier.padding(start = 4.dp, top = 2.dp),
+        horizontalArrangement = Arrangement.spacedBy(2.dp)
+    ) {
+        TextButton(
+            onClick = { clipboard.setText(AnnotatedString(text)) },
+            contentPadding = PaddingValues(horizontal = 8.dp, vertical = 2.dp)
+        ) {
+            Icon(Icons.Default.ContentCopy, contentDescription = null, modifier = Modifier.size(15.dp), tint = GosColors.Blue)
+            Spacer(Modifier.width(4.dp))
+            Text("Копировать", fontSize = 12.sp, color = GosColors.Blue)
+        }
+        TextButton(
+            onClick = {
+                val intent = android.content.Intent(android.content.Intent.ACTION_SEND).apply {
+                    type = "text/plain"
+                    putExtra(android.content.Intent.EXTRA_TEXT, text)
+                }
+                context.startActivity(android.content.Intent.createChooser(intent, "Поделиться ответом"))
+            },
+            contentPadding = PaddingValues(horizontal = 8.dp, vertical = 2.dp)
+        ) {
+            Icon(Icons.Default.Share, contentDescription = null, modifier = Modifier.size(15.dp), tint = GosColors.Blue)
+            Spacer(Modifier.width(4.dp))
+            Text("Поделиться", fontSize = 12.sp, color = GosColors.Blue)
+        }
     }
 }
 
@@ -307,10 +350,10 @@ private fun ChatInputBar(
 }
 
 @Composable
-private fun ErrorBanner(message: String, onDismiss: () -> Unit) {
+private fun ErrorBanner(message: String, onRetry: () -> Unit, onDismiss: () -> Unit) {
     Surface(color = MaterialTheme.colorScheme.errorContainer, modifier = Modifier.fillMaxWidth()) {
         Row(
-            modifier          = Modifier.padding(horizontal = 16.dp, vertical = 10.dp),
+            modifier          = Modifier.padding(start = 16.dp, end = 8.dp, top = 8.dp, bottom = 8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
@@ -319,7 +362,12 @@ private fun ErrorBanner(message: String, onDismiss: () -> Unit) {
                 fontSize = 12.sp,
                 modifier = Modifier.weight(1f)
             )
-            TextButton(onClick = onDismiss) { Text("OK", fontSize = 12.sp) }
+            TextButton(onClick = { onDismiss(); onRetry() }) {
+                Icon(Icons.Default.Refresh, contentDescription = null, modifier = Modifier.size(15.dp))
+                Spacer(Modifier.width(4.dp))
+                Text("Повторить", fontSize = 12.sp)
+            }
+            TextButton(onClick = onDismiss) { Text("✕", fontSize = 14.sp) }
         }
     }
 }
