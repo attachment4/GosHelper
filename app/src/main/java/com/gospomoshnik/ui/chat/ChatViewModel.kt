@@ -97,17 +97,15 @@ class ChatViewModel @Inject constructor(
             }
 
             val userMsg = ChatMessage(sessionId = sessionId, role = "user", content = text)
-            val userMsgId = chatRepository.insertMessage(userMsg)
+            chatRepository.insertMessage(userMsg)
 
             val history = _uiState.value.messages + userMsg
 
             sendMessage(history, category)
                 .catch { e ->
-                    // Откатываем неотправленный вопрос: убираем его из истории и
-                    // возвращаем текст в поле ввода, чтобы пользователь повторил
-                    chatRepository.deleteMessage(userMsgId)
+                    // Оставляем вопрос видимым и показываем причину ошибки
                     _uiState.update {
-                        it.copy(isLoading = false, inputText = text, error = humanError(e))
+                        it.copy(isLoading = false, error = humanError(e))
                     }
                 }
                 .collect { reply ->

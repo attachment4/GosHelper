@@ -3,6 +3,7 @@ package com.gospomoshnik.ui.chat
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -126,6 +127,7 @@ private fun ChatTopBar(
             .background(
                 Brush.linearGradient(listOf(GosColors.Blue, GosColors.BlueDark))
             )
+            .statusBarsPadding()   // не лезть под статус-бар
     ) {
         TopAppBar(
             title = {
