@@ -111,7 +111,6 @@ fun ChatScreen(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun ChatTopBar(
     category: String,
@@ -124,58 +123,45 @@ private fun ChatTopBar(
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .background(
-                Brush.linearGradient(listOf(GosColors.Blue, GosColors.BlueDark))
-            )
-            .statusBarsPadding()   // не лезть под статус-бар
+            .background(Brush.linearGradient(listOf(GosColors.Blue, GosColors.BlueDark)))
+            .statusBarsPadding()
+            .padding(start = 4.dp, end = 16.dp, top = 14.dp, bottom = 18.dp)
     ) {
-        TopAppBar(
-            title = {
-                Column {
-                    Text(
-                        text       = categoryTitle(category),
-                        color      = Color.White,
-                        fontWeight = FontWeight.SemiBold,
-                        fontSize   = 14.sp
-                    )
-                    Text(
-                        text     = "ИИ-консультант · онлайн",
-                        color    = Color.White.copy(alpha = 0.7f),
-                        fontSize = 11.sp
-                    )
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            IconButton(onClick = onBack) {
+                Icon(Icons.Default.ArrowBack, contentDescription = "Назад", tint = Color.White)
+            }
+            Spacer(Modifier.width(4.dp))
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text       = categoryTitle(category),
+                    color      = Color.White,
+                    fontWeight = FontWeight.Bold,
+                    fontSize   = 17.sp,
+                    maxLines   = 1
+                )
+                Spacer(Modifier.height(3.dp))
+                Text(
+                    text     = "ИИ-консультант · онлайн",
+                    color    = Color.White.copy(alpha = 0.75f),
+                    fontSize = 12.sp
+                )
+            }
+            if (canGenerateDoc) {
+                IconButton(onClick = onGenerateDoc) {
+                    Icon(Icons.Default.Description, contentDescription = "Создать документ", tint = Color.White)
                 }
-            },
-            navigationIcon = {
-                IconButton(onClick = onBack) {
-                    Icon(Icons.Default.ArrowBack, contentDescription = "Назад", tint = Color.White)
-                }
-            },
-            actions = {
-                if (canGenerateDoc) {
-                    IconButton(onClick = onGenerateDoc) {
-                        Icon(
-                            Icons.Default.Description,
-                            contentDescription = "Создать документ",
-                            tint = Color.White
-                        )
-                    }
-                }
-                Surface(
-                    shape    = RoundedCornerShape(20.dp),
-                    color    = Color.White.copy(alpha = 0.15f),
-                    modifier = Modifier.padding(end = 12.dp)
-                ) {
-                    Text(
-                        text       = if (isPro) "PRO" else "$requestsLeft / $FREE_DAILY_LIMIT",
-                        color      = Color.White,
-                        fontSize   = 11.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        modifier   = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
-                    )
-                }
-            },
-            colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent)
-        )
+            }
+            Surface(shape = RoundedCornerShape(20.dp), color = Color.White.copy(alpha = 0.18f)) {
+                Text(
+                    text       = if (isPro) "PRO" else "$requestsLeft / $FREE_DAILY_LIMIT",
+                    color      = Color.White,
+                    fontSize   = 12.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    modifier   = Modifier.padding(horizontal = 11.dp, vertical = 5.dp)
+                )
+            }
+        }
     }
 }
 

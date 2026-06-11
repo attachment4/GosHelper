@@ -47,30 +47,30 @@ fun DocumentScreen(
                     .fillMaxWidth()
                     .background(Brush.linearGradient(listOf(GosColors.Blue, GosColors.BlueDark)))
                     .statusBarsPadding()
+                    .padding(start = 4.dp, end = 16.dp, top = 14.dp, bottom = 18.dp)
             ) {
-                TopAppBar(
-                    title = {
-                        Column {
-                            Text(
-                                text       = uiState.title,
-                                color      = Color.White,
-                                fontWeight = FontWeight.SemiBold,
-                                fontSize   = 14.sp
-                            )
-                            Text(
-                                text     = uiState.subtitle,
-                                color    = Color.White.copy(alpha = 0.7f),
-                                fontSize = 11.sp
-                            )
-                        }
-                    },
-                    navigationIcon = {
-                        IconButton(onClick = onBack) {
-                            Icon(Icons.Default.ArrowBack, contentDescription = "Назад", tint = Color.White)
-                        }
-                    },
-                    colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent)
-                )
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    IconButton(onClick = onBack) {
+                        Icon(Icons.Default.ArrowBack, contentDescription = "Назад", tint = Color.White)
+                    }
+                    Spacer(Modifier.width(4.dp))
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text       = uiState.title,
+                            color      = Color.White,
+                            fontWeight = FontWeight.Bold,
+                            fontSize   = 17.sp,
+                            maxLines   = 1
+                        )
+                        Spacer(Modifier.height(3.dp))
+                        Text(
+                            text     = uiState.subtitle,
+                            color    = Color.White.copy(alpha = 0.75f),
+                            fontSize = 12.sp,
+                            maxLines = 1
+                        )
+                    }
+                }
             }
         }
     ) { padding ->
