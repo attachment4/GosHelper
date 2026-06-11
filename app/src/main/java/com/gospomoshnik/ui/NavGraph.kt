@@ -5,6 +5,7 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.runtime.Composable
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -16,9 +17,11 @@ import com.gospomoshnik.ui.legal.LegalScreen
 import com.gospomoshnik.ui.library.DocViewerScreen
 import com.gospomoshnik.ui.library.LibraryScreen
 import com.gospomoshnik.ui.main.MainScreen
+import com.gospomoshnik.ui.onboarding.OnboardingScreen
 import com.gospomoshnik.ui.paywall.PaywallScreen
 import com.gospomoshnik.ui.profile.ProfileScreen
 import com.gospomoshnik.ui.settings.SettingsScreen
+import com.gospomoshnik.ui.settings.SettingsViewModel
 
 sealed class Screen(val route: String) {
     object Main     : Screen("main")
@@ -39,15 +42,19 @@ sealed class Screen(val route: String) {
     object DocView  : Screen("docview/{docId}") {
         fun createRoute(docId: String) = "docview/$docId"
     }
+    object Onboarding : Screen("onboarding")
 }
 
 private const val ANIM = 280
 
 @Composable
-fun NavGraph(navController: NavHostController) {
+fun NavGraph(
+    navController: NavHostController,
+    startDestination: String = Screen.Main.route
+) {
     NavHost(
         navController    = navController,
-        startDestination = Screen.Main.route,
+        startDestination = startDestination,
         // Плавные переходы между экранами
         enterTransition = {
             slideIntoContainer(SlideDirection.Left, tween(ANIM)) + fadeIn(tween(ANIM))
@@ -62,6 +69,18 @@ fun NavGraph(navController: NavHostController) {
             slideOutOfContainer(SlideDirection.Right, tween(ANIM)) + fadeOut(tween(ANIM))
         }
     ) {
+
+        composable(Screen.Onboarding.route) {
+            val settingsVm: SettingsViewModel = hiltViewModel()
+            OnboardingScreen(
+                onFinish = {
+                    settingsVm.completeOnboarding()
+                    navController.navigate(Screen.Main.route) {
+                        popUpTo(Screen.Onboarding.route) { inclusive = true }
+                    }
+                }
+            )
+        }
 
         composable(Screen.Main.route) {
             MainScreen(

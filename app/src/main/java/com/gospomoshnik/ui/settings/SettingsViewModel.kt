@@ -9,6 +9,7 @@ import com.gospomoshnik.domain.model.ThemeMode
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -24,6 +25,14 @@ class SettingsViewModel @Inject constructor(
         initialValue = AppSettings()
     )
 
+    /** Загрузились ли настройки из DataStore (чтобы не мигать онбордингом). */
+    val firstLoaded: StateFlow<Boolean> = repository.settings.map { true }.stateIn(
+        scope        = viewModelScope,
+        started      = SharingStarted.WhileSubscribed(5_000),
+        initialValue = false
+    )
+
     fun setTheme(mode: ThemeMode) = viewModelScope.launch { repository.setTheme(mode) }
     fun setFontSize(size: FontSize) = viewModelScope.launch { repository.setFontSize(size) }
+    fun completeOnboarding() = viewModelScope.launch { repository.setOnboardingDone() }
 }

@@ -15,5 +15,6 @@ enum class FontSize(val scale: Float, val label: String) {
 @Immutable
 data class AppSettings(
     val themeMode: ThemeMode = ThemeMode.SYSTEM,
-    val fontSize: FontSize = FontSize.NORMAL
+    val fontSize: FontSize = FontSize.NORMAL,
+    val onboardingDone: Boolean = false
 )

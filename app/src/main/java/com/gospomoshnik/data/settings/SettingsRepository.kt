@@ -3,6 +3,7 @@ package com.gospomoshnik.data.settings
 import android.content.Context
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
@@ -24,6 +25,7 @@ class SettingsRepository @Inject constructor(
     private object Keys {
         val THEME = stringPreferencesKey("theme_mode")
         val FONT  = stringPreferencesKey("font_size")
+        val ONBOARDING = booleanPreferencesKey("onboarding_done")
     }
 
     val settings: Flow<AppSettings> = context.settingsStore.data.map { prefs ->
@@ -31,7 +33,8 @@ class SettingsRepository @Inject constructor(
             themeMode = prefs[Keys.THEME]?.let { runCatching { ThemeMode.valueOf(it) }.getOrNull() }
                 ?: ThemeMode.SYSTEM,
             fontSize  = prefs[Keys.FONT]?.let { runCatching { FontSize.valueOf(it) }.getOrNull() }
-                ?: FontSize.NORMAL
+                ?: FontSize.NORMAL,
+            onboardingDone = prefs[Keys.ONBOARDING] ?: false
         )
     }
 
@@ -41,5 +44,9 @@ class SettingsRepository @Inject constructor(
 
     suspend fun setFontSize(size: FontSize) {
         context.settingsStore.edit { it[Keys.FONT] = size.name }
+    }
+
+    suspend fun setOnboardingDone() {
+        context.settingsStore.edit { it[Keys.ONBOARDING] = true }
     }
 }
