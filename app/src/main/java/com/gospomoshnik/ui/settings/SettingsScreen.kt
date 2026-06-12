@@ -99,6 +99,32 @@ fun SettingsScreen(
                 OptionRow(label = "Политика конфиденциальности", selected = false, onClick = { onOpenLegal("privacy") })
                 OptionRow(label = "Отказ от ответственности", selected = false, onClick = { onOpenLegal("disclaimer") })
             }
+
+            // ── О приложении ─────────────────────────────────────────────
+            SettingsGroup(title = "О приложении") {
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 14.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text("Версия", fontSize = 16.sp, color = cs.onSurface, modifier = Modifier.weight(1f))
+                    Text(
+                        com.gospomoshnik.BuildConfig.VERSION_NAME,
+                        fontSize = 16.sp,
+                        color = cs.onSurfaceVariant
+                    )
+                }
+                Text(
+                    text = "ГосПомощник — ИИ-консультант по законодательству РФ. " +
+                        "Информационно-справочный сервис, не заменяет юриста. " +
+                        "Данные хранятся только на вашем устройстве.",
+                    fontSize = 13.sp,
+                    color = cs.onSurfaceVariant,
+                    lineHeight = 19.sp,
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp)
+                )
+            }
+
+            Spacer(Modifier.height(8.dp))
         }
     }
 }
