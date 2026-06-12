@@ -102,10 +102,12 @@ class DocumentViewModel @Inject constructor(
     private fun detectCategory(messages: List<ChatMessage>): String {
         val text = messages.joinToString(" ") { it.content }.lowercase()
         return when {
-            "гибдд" in text || "штраф" in text || "постановл" in text -> "gibdd"
-            "жкх" in text || "управляющ" in text || "квитанц" in text -> "zhkh"
-            "уволь" in text || "трудов" in text || "зарплат" in text  -> "labor"
-            "суд" in text || "иск" in text                            -> "court"
+            "гибдд" in text || "штраф" in text || "постановл" in text || "дтп" in text -> "gibdd"
+            "жкх" in text || "управляющ" in text || "квитанц" in text || "перерасч" in text -> "zhkh"
+            "уволь" in text || "трудов" in text || "зарплат" in text || "работодател" in text -> "labor"
+            "пособ" in text || "льгот" in text || "субсид" in text || "выплат" in text -> "benefits"
+            "суд" in text || "иск" in text || "ответчик" in text -> "court"
+            "претенз" in text || "потребител" in text || "возврат товар" in text -> "documents"
             else -> "general"
         }
     }
@@ -142,6 +144,61 @@ class DocumentViewModel @Inject constructor(
             bodyText = "Прошу провести проверку деятельности управляющей компании " +
                 "в связи с ненадлежащим исполнением обязанностей по содержанию " +
                 "общего имущества многоквартирного дома."
+        )
+        "labor" -> DocumentUiState(
+            title    = "Жалоба в трудовую инспекцию",
+            subtitle = "О нарушении трудовых прав",
+            fields   = listOf(
+                DocumentField("Кому", "В Государственную инспекцию труда"),
+                DocumentField("От кого", extractName(messages)),
+                DocumentField("Работодатель", "", editable = true),
+                DocumentField("Дата", today)
+            ),
+            bodyText = "Прошу провести проверку соблюдения работодателем трудового законодательства " +
+                "и принять меры в связи с нарушением моих трудовых прав (несвоевременная выплата " +
+                "заработной платы / иные нарушения). Согласно ст. 136 ТК РФ заработная плата выплачивается " +
+                "не реже чем каждые полмесяца."
+        )
+        "benefits" -> DocumentUiState(
+            title    = "Заявление о назначении выплаты",
+            subtitle = "Мера социальной поддержки",
+            fields   = listOf(
+                DocumentField("Кому", "", editable = true),
+                DocumentField("От кого", extractName(messages)),
+                DocumentField("Основание", "", editable = true),
+                DocumentField("Дата", today)
+            ),
+            bodyText = "Прошу назначить положенную мне меру социальной поддержки (выплату/пособие/льготу) " +
+                "в соответствии с действующим законодательством. К заявлению прилагаю необходимые документы, " +
+                "подтверждающие право на её получение."
+        )
+        "court" -> DocumentUiState(
+            title    = "Исковое заявление",
+            subtitle = "Обращение в суд",
+            fields   = listOf(
+                DocumentField("В суд", "", editable = true),
+                DocumentField("Истец", extractName(messages)),
+                DocumentField("Ответчик", "", editable = true),
+                DocumentField("Цена иска", "", editable = true),
+                DocumentField("Дата", today)
+            ),
+            bodyText = "Прошу суд рассмотреть настоящее исковое заявление и удовлетворить мои требования " +
+                "в полном объёме. Обстоятельства дела и доказательства изложены ниже; правовое основание — " +
+                "соответствующие нормы законодательства РФ (ст. 131–132 ГПК РФ)."
+        )
+        "documents" -> DocumentUiState(
+            title    = "Претензия",
+            subtitle = "Защита прав потребителя",
+            fields   = listOf(
+                DocumentField("Кому", "", editable = true),
+                DocumentField("От кого", extractName(messages)),
+                DocumentField("Дата покупки", "", editable = true),
+                DocumentField("Дата", today)
+            ),
+            bodyText = "В соответствии с Законом РФ «О защите прав потребителей» № 2300-1 прошу удовлетворить " +
+                "мои требования (возврат денежных средств / замена / устранение недостатков) в установленный " +
+                "законом срок. В случае отказа оставляю за собой право обратиться в суд с взысканием неустойки " +
+                "и штрафа в размере 50% от присуждённой суммы."
         )
         else -> DocumentUiState(
             title    = "Заявление",
