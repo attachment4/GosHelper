@@ -4,11 +4,15 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.DeleteSweep
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -32,6 +36,21 @@ fun ProfileScreen(
 ) {
     val subscription by viewModel.subscription.collectAsState()
     val cs = MaterialTheme.colorScheme
+
+    var showClearDialog by remember { mutableStateOf(false) }
+    if (showClearDialog) {
+        AlertDialog(
+            onDismissRequest = { showClearDialog = false },
+            title   = { Text("Очистить историю чатов?") },
+            text    = { Text("Все диалоги будут удалены с устройства без возможности восстановления.") },
+            confirmButton = {
+                TextButton(onClick = { showClearDialog = false; viewModel.clearAllHistory() }) {
+                    Text("Очистить", color = cs.error)
+                }
+            },
+            dismissButton = { TextButton(onClick = { showClearDialog = false }) { Text("Отмена") } }
+        )
+    }
 
     Scaffold(
         containerColor = cs.background,
@@ -130,6 +149,23 @@ fun ProfileScreen(
                     Icon(Icons.Default.Settings, contentDescription = null, tint = cs.onSurfaceVariant)
                     Spacer(Modifier.width(12.dp))
                     Text("Тема и размер текста", fontSize = 16.sp, color = cs.onSurface)
+                }
+            }
+
+            // Очистка всей истории чатов
+            Surface(
+                shape    = RoundedCornerShape(18.dp),
+                color    = cs.surface,
+                modifier = Modifier.fillMaxWidth(),
+                onClick  = { showClearDialog = true }
+            ) {
+                Row(
+                    modifier = Modifier.padding(16.dp),
+                    verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
+                ) {
+                    Icon(Icons.Default.DeleteSweep, contentDescription = null, tint = cs.error)
+                    Spacer(Modifier.width(12.dp))
+                    Text("Очистить историю чатов", fontSize = 16.sp, color = cs.error)
                 }
             }
 

@@ -14,6 +14,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ContentCopy
+import androidx.compose.material.icons.filled.DeleteOutline
 import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.Mic
 import androidx.compose.material.icons.filled.Refresh
@@ -68,6 +69,26 @@ fun ChatScreen(
         }
     }
 
+    // После удаления диалога — закрыть экран
+    LaunchedEffect(uiState.closed) {
+        if (uiState.closed) onBack()
+    }
+
+    var showDeleteDialog by remember { mutableStateOf(false) }
+    if (showDeleteDialog) {
+        AlertDialog(
+            onDismissRequest = { showDeleteDialog = false },
+            title   = { Text("Удалить диалог?") },
+            text    = { Text("Переписка по этой теме будет удалена с устройства без возможности восстановления.") },
+            confirmButton = {
+                TextButton(onClick = { showDeleteDialog = false; viewModel.deleteCurrentChat() }) {
+                    Text("Удалить", color = MaterialTheme.colorScheme.error)
+                }
+            },
+            dismissButton = { TextButton(onClick = { showDeleteDialog = false }) { Text("Отмена") } }
+        )
+    }
+
     // Голосовой ввод через системное распознавание (без разрешения RECORD_AUDIO)
     val voiceLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.StartActivityForResult()
@@ -100,7 +121,9 @@ fun ChatScreen(
                 requestsLeft    = uiState.requestsLeft,
                 isPro           = uiState.isPro,
                 canGenerateDoc  = canGenerateDoc,
+                canDelete       = uiState.sessionId > 0L && uiState.messages.isNotEmpty(),
                 onGenerateDoc   = { onGenerateDocument(uiState.sessionId) },
+                onDelete        = { showDeleteDialog = true },
                 onBack          = onBack
             )
         },
@@ -146,7 +169,9 @@ private fun ChatTopBar(
     requestsLeft: Int,
     isPro: Boolean,
     canGenerateDoc: Boolean,
+    canDelete: Boolean,
     onGenerateDoc: () -> Unit,
+    onDelete: () -> Unit,
     onBack: () -> Unit
 ) {
     Box(
@@ -179,6 +204,11 @@ private fun ChatTopBar(
             if (canGenerateDoc) {
                 IconButton(onClick = onGenerateDoc) {
                     Icon(Icons.Default.Description, contentDescription = "Создать документ", tint = Color.White)
+                }
+            }
+            if (canDelete) {
+                IconButton(onClick = onDelete) {
+                    Icon(Icons.Default.DeleteOutline, contentDescription = "Удалить диалог", tint = Color.White)
                 }
             }
             Surface(shape = RoundedCornerShape(20.dp), color = Color.White.copy(alpha = 0.18f)) {

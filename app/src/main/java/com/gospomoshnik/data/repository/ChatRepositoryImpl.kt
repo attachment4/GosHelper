@@ -39,4 +39,7 @@ class ChatRepositoryImpl @Inject constructor(
 
     override suspend fun deleteSession(sessionId: Long) =
         dao.deleteSession(sessionId)
+
+    override suspend fun deleteAllSessions() =
+        dao.deleteAllSessions()
 }

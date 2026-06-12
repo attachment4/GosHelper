@@ -33,4 +33,7 @@ interface ChatRepository {
 
     /** Удалить сессию вместе со всеми её сообщениями. */
     suspend fun deleteSession(sessionId: Long)
+
+    /** Удалить всю историю чатов. */
+    suspend fun deleteAllSessions()
 }

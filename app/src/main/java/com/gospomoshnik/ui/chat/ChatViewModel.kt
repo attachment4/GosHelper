@@ -26,7 +26,8 @@ data class ChatUiState(
     val showPaywall: Boolean = false,
     val sessionId: Long = 0L,
     val requestsLeft: Int = com.gospomoshnik.domain.model.FREE_DAILY_LIMIT,
-    val isPro: Boolean = false
+    val isPro: Boolean = false,
+    val closed: Boolean = false
 )
 
 @HiltViewModel
@@ -179,6 +180,15 @@ class ChatViewModel @Inject constructor(
                 checkSubscription.consumeRequest()
                 _uiState.update { it.copy(isLoading = false) }
             }
+    }
+
+    /** Удалить текущий диалог вместе с сообщениями и закрыть экран. */
+    fun deleteCurrentChat() {
+        viewModelScope.launch {
+            messagesJob?.cancel()
+            if (sessionId > 0L) chatRepository.deleteSession(sessionId)
+            _uiState.update { it.copy(closed = true) }
+        }
     }
 
     fun dismissPaywall() {

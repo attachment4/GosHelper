@@ -28,6 +28,9 @@ interface ChatDao {
     @Query("DELETE FROM chat_sessions WHERE id = :id")
     suspend fun deleteSession(id: Long)
 
+    @Query("DELETE FROM chat_sessions")
+    suspend fun deleteAllSessions()
+
     // ── Сообщения ───────────────────────────────────────────────────────────
 
     @Query("SELECT * FROM chat_messages WHERE sessionId = :sessionId ORDER BY timestamp ASC")
