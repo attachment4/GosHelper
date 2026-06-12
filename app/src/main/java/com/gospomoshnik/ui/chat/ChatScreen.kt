@@ -14,6 +14,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.AttachFile
+import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.DeleteOutline
 import androidx.compose.material.icons.filled.Description
@@ -109,6 +111,12 @@ fun ChatScreen(
         runCatching { voiceLauncher.launch(intent) }
     }
 
+    // Прикрепить фото → распознать текст (OCR) → подставить в поле ввода
+    val imageLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.GetContent()
+    ) { uri -> if (uri != null) viewModel.processImage(uri) }
+    val pickImage: () -> Unit = { runCatching { imageLauncher.launch("image/*") } }
+
     // Документ можно создать, когда ИИ уже что-то ответил в сохранённой сессии
     val canGenerateDoc = uiState.sessionId > 0L &&
         uiState.messages.any { it.role == "assistant" }
@@ -134,7 +142,9 @@ fun ChatScreen(
                 onChange   = viewModel::onInputChange,
                 onSend     = viewModel::send,
                 onMic      = startVoice,
-                isLoading  = uiState.isLoading
+                onAttach   = pickImage,
+                isLoading  = uiState.isLoading,
+                ocrRunning = uiState.ocrRunning
             )
         }
     ) { padding ->
@@ -153,6 +163,34 @@ fun ChatScreen(
                     }
                     if (uiState.isLoading) {
                         item { TypingIndicator() }
+                    }
+                }
+            }
+
+            // Заметная кнопка генерации документа (когда ИИ уже ответил)
+            if (canGenerateDoc && !uiState.isLoading) {
+                Surface(
+                    color    = GosColors.BlueLight,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 12.dp, vertical = 6.dp)
+                        .clickable { onGenerateDocument(uiState.sessionId) },
+                    shape = RoundedCornerShape(14.dp)
+                ) {
+                    Row(
+                        modifier = Modifier.padding(horizontal = 14.dp, vertical = 12.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(Icons.Default.Description, contentDescription = null, tint = GosColors.Blue)
+                        Spacer(Modifier.width(10.dp))
+                        Text(
+                            "Составить документ по этой теме",
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            color = GosColors.Blue,
+                            modifier = Modifier.weight(1f)
+                        )
+                        Icon(Icons.Default.ChevronRight, contentDescription = null, tint = GosColors.Blue)
                     }
                 }
             }
@@ -412,33 +450,50 @@ private fun ChatInputBar(
     onChange: (String) -> Unit,
     onSend: () -> Unit,
     onMic: () -> Unit,
-    isLoading: Boolean
+    onAttach: () -> Unit,
+    isLoading: Boolean,
+    ocrRunning: Boolean
 ) {
     Surface(tonalElevation = 3.dp, modifier = Modifier.fillMaxWidth()) {
-        Row(
-            modifier          = Modifier.padding(horizontal = 14.dp, vertical = 10.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(6.dp)
-        ) {
-            OutlinedTextField(
-                value         = text,
-                onValueChange = onChange,
-                placeholder   = { Text("Ваш вопрос...", fontSize = 13.sp) },
-                shape         = RoundedCornerShape(22.dp),
-                modifier      = Modifier.weight(1f),
-                maxLines      = 4,
-                textStyle     = LocalTextStyle.current.copy(fontSize = 13.sp)
-            )
-            // Голосовой ввод
-            IconButton(onClick = onMic, enabled = !isLoading) {
-                Icon(Icons.Default.Mic, contentDescription = "Голосовой ввод", tint = BrandColor)
+        Column(modifier = Modifier.padding(horizontal = 12.dp, vertical = 10.dp)) {
+            if (ocrRunning) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.padding(bottom = 8.dp, start = 4.dp)
+                ) {
+                    CircularProgressIndicator(strokeWidth = 2.dp, modifier = Modifier.size(16.dp), color = BrandColor)
+                    Spacer(Modifier.width(8.dp))
+                    Text("Распознаю текст с фото…", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
             }
-            FilledIconButton(
-                onClick = onSend,
-                enabled = text.isNotBlank() && !isLoading,
-                colors  = IconButtonDefaults.filledIconButtonColors(containerColor = BrandColor)
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(2.dp)
             ) {
-                Icon(Icons.Default.Send, contentDescription = "Отправить", tint = Color.White)
+                // Прикрепить фото
+                IconButton(onClick = onAttach, enabled = !isLoading && !ocrRunning) {
+                    Icon(Icons.Default.AttachFile, contentDescription = "Прикрепить фото", tint = BrandColor)
+                }
+                OutlinedTextField(
+                    value         = text,
+                    onValueChange = onChange,
+                    placeholder   = { Text("Ваш вопрос...", fontSize = 13.sp) },
+                    shape         = RoundedCornerShape(22.dp),
+                    modifier      = Modifier.weight(1f),
+                    maxLines      = 4,
+                    textStyle     = LocalTextStyle.current.copy(fontSize = 13.sp)
+                )
+                // Голосовой ввод
+                IconButton(onClick = onMic, enabled = !isLoading && !ocrRunning) {
+                    Icon(Icons.Default.Mic, contentDescription = "Голосовой ввод", tint = BrandColor)
+                }
+                FilledIconButton(
+                    onClick = onSend,
+                    enabled = text.isNotBlank() && !isLoading && !ocrRunning,
+                    colors  = IconButtonDefaults.filledIconButtonColors(containerColor = BrandColor)
+                ) {
+                    Icon(Icons.Default.Send, contentDescription = "Отправить", tint = Color.White)
+                }
             }
         }
     }

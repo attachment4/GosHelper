@@ -123,6 +123,10 @@ dependencies {
     // DataStore
     implementation(libs.datastore.preferences)
 
+    // OCR (распознавание текста с фото, офлайн, кириллица) — Tesseract4Android (JitPack)
+    // Требует файл языка: app/src/main/assets/tessdata/rus.traineddata (~15 МБ)
+    implementation("com.github.adaptech-cz:Tesseract4Android:4.8.0")
+
     // Testing
     testImplementation(libs.junit)
     testImplementation(libs.coroutines.test)
