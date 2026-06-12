@@ -57,6 +57,21 @@ fun MainScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
+    var showClear by remember { mutableStateOf(false) }
+    if (showClear) {
+        AlertDialog(
+            onDismissRequest = { showClear = false },
+            title   = { Text("Очистить все чаты?") },
+            text    = { Text("Вся история диалогов будет удалена с устройства без возможности восстановления.") },
+            confirmButton = {
+                TextButton(onClick = { showClear = false; viewModel.clearAllHistory() }) {
+                    Text("Очистить", color = MaterialTheme.colorScheme.error)
+                }
+            },
+            dismissButton = { TextButton(onClick = { showClear = false }) { Text("Отмена") } }
+        )
+    }
+
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
         bottomBar = {
@@ -81,7 +96,21 @@ fun MainScreen(
             if (uiState.recentSessions.isNotEmpty()) {
                 item {
                     Spacer(Modifier.height(22.dp))
-                    SectionHeader("Недавние вопросы")
+                    Row(
+                        modifier = Modifier.fillMaxWidth().padding(start = 18.dp, end = 8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            "Недавние вопросы",
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurface,
+                            modifier = Modifier.weight(1f)
+                        )
+                        TextButton(onClick = { showClear = true }) {
+                            Text("Очистить", fontSize = 13.sp, color = GosColors.Blue)
+                        }
+                    }
                     Spacer(Modifier.height(8.dp))
                 }
                 items(uiState.recentSessions.take(5), key = { it.id }) { session ->
