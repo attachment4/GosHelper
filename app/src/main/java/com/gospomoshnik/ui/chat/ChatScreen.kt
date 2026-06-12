@@ -3,6 +3,7 @@ package com.gospomoshnik.ui.chat
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.statusBarsPadding
@@ -139,7 +140,7 @@ fun ChatScreen(
     ) { padding ->
         Column(modifier = Modifier.fillMaxSize().padding(padding)) {
             if (uiState.messages.isEmpty() && !uiState.isLoading) {
-                WelcomePlaceholder(category = category)
+                WelcomePlaceholder(category = category, onExample = viewModel::onInputChange)
             } else {
                 LazyColumn(
                     state          = listState,
@@ -281,7 +282,10 @@ private fun MessageActions(text: String) {
         horizontalArrangement = Arrangement.spacedBy(2.dp)
     ) {
         TextButton(
-            onClick = { clipboard.setText(AnnotatedString(text)) },
+            onClick = {
+                clipboard.setText(AnnotatedString(text))
+                android.widget.Toast.makeText(context, "Скопировано", android.widget.Toast.LENGTH_SHORT).show()
+            },
             contentPadding = PaddingValues(horizontal = 8.dp, vertical = 2.dp)
         ) {
             Icon(Icons.Default.ContentCopy, contentDescription = null, modifier = Modifier.size(15.dp), tint = GosColors.Blue)
@@ -344,29 +348,62 @@ private fun TypingIndicator() {
 }
 
 @Composable
-private fun WelcomePlaceholder(category: String) {
+private fun WelcomePlaceholder(category: String, onExample: (String) -> Unit) {
     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
-            modifier            = Modifier.padding(32.dp)
+            modifier            = Modifier.padding(28.dp)
         ) {
             Text("👋", fontSize = 40.sp)
             Spacer(Modifier.height(12.dp))
             Text(
                 text       = "Задайте вопрос по теме\n«${categoryTitle(category)}»",
-                fontSize   = 14.sp,
+                fontSize   = 15.sp,
                 fontWeight = FontWeight.Medium,
                 color      = MaterialTheme.colorScheme.onSurface
             )
             Spacer(Modifier.height(6.dp))
             Text(
-                text       = "ИИ ответит и при необходимости\nпоможет составить документ",
+                text       = "ИИ ответит и поможет составить документ",
                 fontSize   = 12.sp,
-                color      = MaterialTheme.colorScheme.onSurfaceVariant,
-                lineHeight = 18.sp
+                color      = MaterialTheme.colorScheme.onSurfaceVariant
             )
+            Spacer(Modifier.height(20.dp))
+            Text(
+                "Примеры:",
+                fontSize = 11.sp,
+                fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Spacer(Modifier.height(8.dp))
+            exampleQuestions(category).forEach { q ->
+                Surface(
+                    shape    = RoundedCornerShape(14.dp),
+                    color    = GosColors.BlueLight,
+                    modifier = Modifier
+                        .padding(vertical = 4.dp)
+                        .clickable { onExample(q) }
+                ) {
+                    Text(
+                        q,
+                        fontSize = 13.sp,
+                        color    = GosColors.Blue,
+                        modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp)
+                    )
+                }
+            }
         }
     }
+}
+
+private fun exampleQuestions(category: String): List<String> = when (category) {
+    "gibdd"     -> listOf("Как обжаловать штраф ГИБДД?", "Как выгодно оплатить штраф?", "Что делать при ДТП?")
+    "zhkh"      -> listOf("УК не делает ремонт — что делать?", "Как сделать перерасчёт за ЖКУ?", "Как оформить субсидию на ЖКУ?")
+    "labor"     -> listOf("Не платят зарплату — что делать?", "Что выгоднее: соглашение или сокращение?", "Как оспорить увольнение?")
+    "benefits"  -> listOf("Какие выплаты положены на ребёнка?", "Как оформить единое пособие?", "Какие льготы у пенсионеров?")
+    "court"     -> listOf("Как подать иск в суд?", "Сколько стоит госпошлина?", "Как взыскать долг по расписке?")
+    "documents" -> listOf("Как составить претензию?", "Как написать жалобу в госорган?", "Как составить расписку?")
+    else        -> listOf("Как обжаловать штраф?", "Не платят зарплату — что делать?", "Как составить претензию?")
 }
 
 @Composable

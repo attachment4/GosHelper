@@ -9,8 +9,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.Description
-import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Share
@@ -20,6 +20,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -111,26 +114,40 @@ fun DocumentScreen(
 
             HorizontalDivider()
 
-            // Кнопки
+            // Кнопки — собираем текст документа и делимся / копируем
+            val context = LocalContext.current
+            val clipboard = LocalClipboardManager.current
+            val docText = remember(uiState) { buildDocText(uiState) }
+
             Button(
-                onClick  = viewModel::exportPdf,
+                onClick  = {
+                    val intent = android.content.Intent(android.content.Intent.ACTION_SEND).apply {
+                        type = "text/plain"
+                        putExtra(android.content.Intent.EXTRA_SUBJECT, uiState.title)
+                        putExtra(android.content.Intent.EXTRA_TEXT, docText)
+                    }
+                    context.startActivity(android.content.Intent.createChooser(intent, "Поделиться документом"))
+                },
                 modifier = Modifier.fillMaxWidth().height(50.dp),
                 shape    = RoundedCornerShape(14.dp),
                 colors   = ButtonDefaults.buttonColors(containerColor = BrandColor)
             ) {
-                Icon(Icons.Default.Download, contentDescription = null)
+                Icon(Icons.Default.Share, contentDescription = null)
                 Spacer(Modifier.width(8.dp))
-                Text("Скачать PDF", fontWeight = FontWeight.SemiBold)
+                Text("Поделиться документом", fontWeight = FontWeight.SemiBold)
             }
 
             OutlinedButton(
-                onClick  = { /* TODO: share */ },
+                onClick  = {
+                    clipboard.setText(AnnotatedString(docText))
+                    android.widget.Toast.makeText(context, "Скопировано", android.widget.Toast.LENGTH_SHORT).show()
+                },
                 modifier = Modifier.fillMaxWidth().height(50.dp),
                 shape    = RoundedCornerShape(14.dp)
             ) {
-                Icon(Icons.Default.Share, contentDescription = null)
+                Icon(Icons.Default.ContentCopy, contentDescription = null)
                 Spacer(Modifier.width(8.dp))
-                Text("Поделиться")
+                Text("Копировать текст")
             }
 
             PrivacyNote()
@@ -292,4 +309,13 @@ private fun SavedBanner() {
             Text("Документ сохранён на устройстве", fontSize = 12.sp, color = GreenColor, fontWeight = FontWeight.Medium)
         }
     }
+}
+
+private fun buildDocText(state: DocumentUiState): String = buildString {
+    appendLine(state.title.uppercase())
+    if (state.subtitle.isNotBlank()) appendLine(state.subtitle)
+    appendLine()
+    state.fields.forEach { f -> if (f.value.isNotBlank()) appendLine("${f.label}: ${f.value}") }
+    appendLine()
+    appendLine(state.bodyText)
 }
