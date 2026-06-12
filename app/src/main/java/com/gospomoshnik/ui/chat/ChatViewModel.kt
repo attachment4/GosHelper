@@ -7,6 +7,9 @@ import com.gospomoshnik.domain.model.ChatMessage
 import com.gospomoshnik.domain.model.ChatSession
 import com.gospomoshnik.domain.repository.ChatRepository
 import android.content.Context
+import android.net.Uri
+import com.gospomoshnik.data.ocr.OcrEngine
+import com.gospomoshnik.data.ocr.OcrResult
 import com.gospomoshnik.domain.usecase.CheckSubscriptionUseCase
 import com.gospomoshnik.domain.usecase.SendMessageUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -27,7 +30,8 @@ data class ChatUiState(
     val sessionId: Long = 0L,
     val requestsLeft: Int = com.gospomoshnik.domain.model.FREE_DAILY_LIMIT,
     val isPro: Boolean = false,
-    val closed: Boolean = false
+    val closed: Boolean = false,
+    val ocrRunning: Boolean = false
 )
 
 @HiltViewModel
@@ -35,6 +39,7 @@ class ChatViewModel @Inject constructor(
     private val chatRepository: ChatRepository,
     private val sendMessage: SendMessageUseCase,
     private val checkSubscription: CheckSubscriptionUseCase,
+    private val ocrEngine: OcrEngine,
     @ApplicationContext private val appContext: Context,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
@@ -99,6 +104,26 @@ class ChatViewModel @Inject constructor(
     /** Добавить распознанный голосом текст к полю ввода. */
     fun appendInput(text: String) {
         _uiState.update { it.copy(inputText = (it.inputText.trim() + " " + text.trim()).trim()) }
+    }
+
+    /** Распознать текст с прикреплённого фото (OCR) и подставить в поле ввода. */
+    fun processImage(uri: Uri) {
+        if (_uiState.value.ocrRunning) return
+        viewModelScope.launch {
+            _uiState.update { it.copy(ocrRunning = true, error = null) }
+            when (val res = ocrEngine.recognize(uri)) {
+                is OcrResult.Success -> _uiState.update {
+                    val prefix = if (it.inputText.isBlank()) "" else it.inputText.trim() + "\n\n"
+                    it.copy(
+                        ocrRunning = false,
+                        inputText  = prefix + "Текст с фото:\n" + res.text
+                    )
+                }
+                is OcrResult.Failure -> _uiState.update {
+                    it.copy(ocrRunning = false, error = res.reason)
+                }
+            }
+        }
     }
 
     fun send() {
