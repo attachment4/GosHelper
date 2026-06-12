@@ -13,6 +13,7 @@ import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.PictureAsPdf
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -119,22 +120,51 @@ fun DocumentScreen(
             val clipboard = LocalClipboardManager.current
             val docText = remember(uiState) { buildDocText(uiState) }
 
+            // Когда PDF сгенерирован — открываем системный шаринг
+            LaunchedEffect(uiState.pdfUri) {
+                uiState.pdfUri?.let { uri ->
+                    val intent = android.content.Intent(android.content.Intent.ACTION_SEND).apply {
+                        type = "application/pdf"
+                        putExtra(android.content.Intent.EXTRA_STREAM, uri)
+                        putExtra(android.content.Intent.EXTRA_SUBJECT, uiState.title)
+                        addFlags(android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                    }
+                    context.startActivity(android.content.Intent.createChooser(intent, "PDF: сохранить или отправить"))
+                    viewModel.consumePdfUri()
+                }
+            }
+
             Button(
+                onClick  = viewModel::exportPdf,
+                enabled  = !uiState.pdfGenerating,
+                modifier = Modifier.fillMaxWidth().height(50.dp),
+                shape    = RoundedCornerShape(14.dp),
+                colors   = ButtonDefaults.buttonColors(containerColor = BrandColor)
+            ) {
+                if (uiState.pdfGenerating) {
+                    CircularProgressIndicator(color = Color.White, strokeWidth = 2.dp, modifier = Modifier.size(20.dp))
+                } else {
+                    Icon(Icons.Default.PictureAsPdf, contentDescription = null)
+                    Spacer(Modifier.width(8.dp))
+                    Text("Скачать PDF", fontWeight = FontWeight.SemiBold)
+                }
+            }
+
+            OutlinedButton(
                 onClick  = {
                     val intent = android.content.Intent(android.content.Intent.ACTION_SEND).apply {
                         type = "text/plain"
                         putExtra(android.content.Intent.EXTRA_SUBJECT, uiState.title)
                         putExtra(android.content.Intent.EXTRA_TEXT, docText)
                     }
-                    context.startActivity(android.content.Intent.createChooser(intent, "Поделиться документом"))
+                    context.startActivity(android.content.Intent.createChooser(intent, "Поделиться текстом"))
                 },
                 modifier = Modifier.fillMaxWidth().height(50.dp),
-                shape    = RoundedCornerShape(14.dp),
-                colors   = ButtonDefaults.buttonColors(containerColor = BrandColor)
+                shape    = RoundedCornerShape(14.dp)
             ) {
                 Icon(Icons.Default.Share, contentDescription = null)
                 Spacer(Modifier.width(8.dp))
-                Text("Поделиться документом", fontWeight = FontWeight.SemiBold)
+                Text("Поделиться текстом")
             }
 
             OutlinedButton(
@@ -151,11 +181,6 @@ fun DocumentScreen(
             }
 
             PrivacyNote()
-
-            // Статус сохранения
-            uiState.pdfPath?.let {
-                SavedBanner()
-            }
 
             uiState.error?.let { err ->
                 Text(err, color = MaterialTheme.colorScheme.error, fontSize = 12.sp)

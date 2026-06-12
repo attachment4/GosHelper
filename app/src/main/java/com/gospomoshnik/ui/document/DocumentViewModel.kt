@@ -1,9 +1,11 @@
 package com.gospomoshnik.ui.document
 
 import android.content.Context
+import android.net.Uri
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.gospomoshnik.data.pdf.PdfExporter
 import com.gospomoshnik.domain.model.ChatMessage
 import com.gospomoshnik.domain.repository.ChatRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -14,7 +16,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -28,13 +29,15 @@ data class DocumentUiState(
     val fields: List<DocumentField> = emptyList(),
     val bodyText: String = "",
     val isLoading: Boolean = true,
-    val pdfPath: String? = null,
+    val pdfGenerating: Boolean = false,
+    val pdfUri: Uri? = null,
     val error: String? = null
 )
 
 @HiltViewModel
 class DocumentViewModel @Inject constructor(
     private val chatRepository: ChatRepository,
+    private val pdfExporter: PdfExporter,
     @ApplicationContext private val context: Context,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
@@ -71,29 +74,30 @@ class DocumentViewModel @Inject constructor(
         _uiState.update { it.copy(bodyText = text) }
     }
 
+    /** Сгенерировать PDF и положить его Uri в состояние — UI откроет шаринг. */
     fun exportPdf() {
+        if (_uiState.value.pdfGenerating) return
         viewModelScope.launch {
-            try {
-                val state = _uiState.value
-                val dir  = File(context.filesDir, "documents").also { it.mkdirs() }
-                val file = File(dir, "document_${System.currentTimeMillis()}.txt")
-
-                // Собираем текст документа (PDF через iTextG — Фаза 3+)
-                val content = buildString {
-                    appendLine(state.title.uppercase())
-                    appendLine(state.subtitle)
-                    appendLine()
-                    state.fields.forEach { f -> appendLine("${f.label}: ${f.value}") }
-                    appendLine()
-                    appendLine(state.bodyText)
-                }
-                file.writeText(content)
-                _uiState.update { it.copy(pdfPath = file.absolutePath) }
-            } catch (e: Exception) {
-                _uiState.update { it.copy(error = "Ошибка сохранения: ${e.message}") }
+            _uiState.update { it.copy(pdfGenerating = true, error = null) }
+            val state = _uiState.value
+            val content = buildString {
+                appendLine(state.title.uppercase())
+                if (state.subtitle.isNotBlank()) appendLine(state.subtitle)
+                appendLine()
+                state.fields.forEach { f -> if (f.value.isNotBlank()) appendLine("${f.label}: ${f.value}") }
+                appendLine()
+                appendLine(state.bodyText)
+            }
+            val uri = pdfExporter.export(state.title, content)
+            _uiState.update {
+                if (uri != null) it.copy(pdfGenerating = false, pdfUri = uri)
+                else it.copy(pdfGenerating = false, error = "Не удалось создать PDF")
             }
         }
     }
+
+    /** Сбросить Uri после того, как UI запустил шаринг. */
+    fun consumePdfUri() = _uiState.update { it.copy(pdfUri = null) }
 
     fun clearError() = _uiState.update { it.copy(error = null) }
 

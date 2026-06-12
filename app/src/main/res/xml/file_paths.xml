@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<paths>
+    <!-- Сгенерированные PDF лежат в cacheDir/shared и шарятся через FileProvider -->
+    <cache-path name="shared" path="shared/" />
+</paths>
