@@ -12,4 +12,3 @@ local.properties
 *.keystore
 *.hprof
 app/build/
-app/src/main/assets/tessdata/*.traineddata
